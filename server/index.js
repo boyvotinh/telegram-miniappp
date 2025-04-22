@@ -1,0 +1,21 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+const taskRoutes = require('./routes/tasks');
+const usersRouter = require('./routes/users');
+const teamRoutes = require('./routes/teams');
+const submissionRoutes = require('./routes/submissions');
+const app = express();
+const port = 3001;
+
+app.use(bodyParser.json());
+
+app.use('/api', taskRoutes);
+app.use('/api/users', usersRouter);
+app.use('/api/teams', teamRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/submissions', submissionRoutes);
+app.use('/uploads', express.static('uploads'));
+console.log("Teams routes mounted");
+app.listen(port, () => {
+  console.log(`Server đang chạy ở http://localhost:${port}`);
+});
