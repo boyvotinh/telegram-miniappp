@@ -32,5 +32,28 @@ router.get('/', (req, res) => {
     res.status(200).json(results);
   });
 });
+// xem nv
+router.get('/me', (req, res) => {
+  const telegram_id = req.query.telegram_id;
+
+  if (!telegram_id) {
+    return res.status(400).json({ error: 'Thiếu telegram_id' });
+  }
+
+  const sql = `SELECT * FROM users WHERE telegram_id = ? LIMIT 1`;
+
+  db.query(sql, [telegram_id], (err, results) => {
+    if (err) {
+      console.error("Lỗi truy vấn user:", err);
+      return res.status(500).json({ error: "Lỗi máy chủ" });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy người dùng' });
+    }
+
+    res.status(200).json(results[0]);
+  });
+});
 
 module.exports = router;

@@ -4,11 +4,12 @@ const taskRoutes = require('./routes/tasks');
 const usersRouter = require('./routes/users');
 const teamRoutes = require('./routes/teams');
 const submissionRoutes = require('./routes/submissions');
+const cors = require('cors')
 const app = express();
 const port = 3001;
 
 app.use(bodyParser.json());
-
+app.use(cors());
 app.use('/api', taskRoutes);
 app.use('/api/users', usersRouter);
 app.use('/api/teams', teamRoutes);

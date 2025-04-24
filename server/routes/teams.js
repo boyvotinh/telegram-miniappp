@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 // ✅ Thêm nhóm mới và tự động thêm người tạo vào nhóm
-router.post('/', (req, res) => {
+router.post('/create', (req, res) => {
   const { name, created_by } = req.body;
   const sql = 'INSERT INTO teams (name, created_by) VALUES (?, ?)';
   db.query(sql, [name, created_by], (err, result) => {
@@ -74,6 +74,27 @@ router.get('/:id/members', (req, res) => {
     res.status(200).json({ teamId, members: results });
   });
 });
+// Lấy danh sách nhóm mà user đang tham gia
+router.get('/by-user/:userId', (req, res) => {
+  const userId = req.params.userId;
+
+  const sql = `
+    SELECT teams.*, team_members.role 
+    FROM teams
+    JOIN team_members ON teams.id = team_members.team_id
+    WHERE team_members.user_id = ?
+  `;
+
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error('Lỗi khi lấy danh sách nhóm của user:', err);
+      return res.status(500).json({ error: 'Không thể lấy danh sách nhóm của user' });
+    }
+
+    res.status(200).json(results);
+  });
+});
+
 // xóa thành viên nhóm
 router.delete('/remove-member', (req, res) => {
   const { team_id, user_id } = req.body;
@@ -92,4 +113,5 @@ router.delete('/remove-member', (req, res) => {
     res.status(200).json({ message: 'Đã xóa thành viên khỏi nhóm' });
   });
 });
+
 module.exports = router;

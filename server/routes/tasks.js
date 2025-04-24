@@ -178,5 +178,26 @@ router.get('/my-tasks', (req, res) => {
     });
   });
 });
+// xem
+router.get('/by-user/:userId', (req, res) => {
+  const userId = req.params.userId;
+
+  const query = `
+    SELECT tasks.*, teams.name AS groupName
+    FROM tasks
+    LEFT JOIN teams ON tasks.team_id = teams.id
+    WHERE assigned_to = ?
+  `;
+
+  db.query(query, [userId], (err, results) => {
+    if (err) {
+      console.error('Lỗi khi lấy nhiệm vụ của user:', err);
+      return res.status(500).json({ error: 'Lỗi server' });
+    }
+
+    res.json(results);
+  });
+});
+
 
 module.exports = router;
