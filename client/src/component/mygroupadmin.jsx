@@ -1,41 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   List, Card, Typography, Button, Input, Divider, Empty, message as antdMessage,
-  Avatar, Modal, Tag
+  Avatar, Modal, Tag, Space, DatePicker
 } from 'antd';
-import { TeamOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
+import { TeamOutlined, PlusOutlined, UserOutlined, FormOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
-
+import dayjs from 'dayjs';
 const { Title, Text } = Typography;
 
 function MyGroupsAsAdmin({ user, groups }) {
   const [groupName, setGroupName] = useState('');
+  const [telegramId, setTelegramId] = useState('');
   const [adminGroups, setAdminGroups] = useState(
     groups.filter(group => group.created_by === user.id)
   );
-
   const [selectedGroup, setSelectedGroup] = useState(null);
-  const [tasks, setTasks] = useState([]);
+  const [members, setMembers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAssignTaskModalOpen, setIsAssignTaskModalOpen] = useState(false);
+  const [newTask, setNewTask] = useState({
+    title: '',
+    description: '',
+    status: 'pending', 
+    deadline: null
+  });
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
+
+  // Lấy danh sách thành viên khi nhóm được chọn
+  useEffect(() => {
+    if (selectedGroup) {
+      const fetchMembers = async () => {
+        try {
+          const response = await axios.get(`http://localhost:3001/api/teams/${selectedGroup.id}/members`);
+          setMembers(response.data.members);
+        } catch (error) {
+          console.error('Lỗi khi lấy thành viên:', error);
+          setMembers([]);
+        }
+      };
+      fetchMembers();
+    }
+  }, [selectedGroup]);
 
   const handleCreateGroup = async () => {
     if (!groupName.trim()) {
       antdMessage.warning('Tên nhóm không được để trống.');
       return;
     }
-
     try {
       const response = await axios.post('http://localhost:3001/api/teams/create', {
         name: groupName,
         created_by: user.id
       });
-
       const newGroup = {
         id: response.data.teamId,
         name: groupName,
         created_by: user.id
       };
-
       setAdminGroups(prev => [...prev, newGroup]);
       setGroupName('');
       antdMessage.success('Tạo nhóm thành công!');
@@ -44,32 +66,226 @@ function MyGroupsAsAdmin({ user, groups }) {
       antdMessage.error('Tạo nhóm thất bại!');
     }
   };
-  // Khi click vào nhóm -> hiển thị modal và load nhiệm vụ
+// thẻ nhóm
   const handleSelectGroup = async (group) => {
     setSelectedGroup(group);
     setIsModalOpen(true);
-    try {
-      const response = await axios.get(`http://localhost:3001/api/tasks/by-group/${group.id}`);
-      setTasks(response.data);
-    } catch (error) {
-      console.error('Lỗi khi lấy nhiệm vụ:', error);
-      setTasks([]);
-    }
   };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedGroup(null);
-    setTasks([]);
+    setMembers([]);
   };
+// giao việc
+const handleAssignTask = async () => {
+  // Kiểm tra tiêu đề không được để trống
+  if (!newTask.title.trim()) {
+    antdMessage.warning('Tiêu đề nhiệm vụ không được để trống.');
+    return;
+  }
+
+  // Kiểm tra xem đã chọn thành viên chưa
+  if (!selectedMember) {
+    antdMessage.warning('Chọn thành viên để giao nhiệm vụ.');
+    return;
+  }
+
+  // Kiểm tra deadline đã được chọn chưa
+  if (!newTask.deadline) {
+    antdMessage.warning('Chọn hạn chót cho nhiệm vụ.');
+    return;
+  }
+
+  try {
+    // Định dạng lại deadline nếu có
+    const formattedDeadline = newTask.deadline ? newTask.deadline.format('YYYY-MM-DD') : null;
+
+    // Gửi dữ liệu lên backend
+    const response = await axios.post('http://localhost:3001/api/tasks/assign', {
+      ...newTask,
+      assigned_to: selectedMember.id,  // Gán thành viên vào nhiệm vụ
+      team_id: selectedGroup.id,  // Gán nhóm vào nhiệm vụ
+      deadline: formattedDeadline,  // Đảm bảo deadline được gửi đúng định dạng
+    });
+
+    // Hiển thị thông báo thành công và đóng modal
+    antdMessage.success('Giao nhiệm vụ thành công!');
+    setIsAssignTaskModalOpen(false);  // Đóng modal thêm nhiệm vụ
+    setNewTask({ title: '', description: '', status: 'pending', deadline: null });  // Reset form
+  } catch (error) {
+    console.error('Lỗi khi giao nhiệm vụ:', error);
+    antdMessage.error('Giao nhiệm vụ thất bại!');
+  }
+};
+
+// Invite thành viên
+  const handleInviteMember = async () => {
+    if (!telegramId.trim()) {
+      antdMessage.warning('Vui lòng nhập ID Telegram.');
+      return;
+    }
+  
+    try {
+      await axios.post('http://localhost:3001/api/teams/invite', {
+        team_id: selectedGroup.id,
+        telegram_id: telegramId
+      });
+  
+      antdMessage.success('Đã mời thành viên thành công!');
+      setTelegramId('');
+      // Gọi lại API để load lại danh sách thành viên
+      const response = await axios.get(`http://localhost:3001/api/teams/${selectedGroup.id}/members`);
+      setMembers(response.data.members);
+    } catch (error) {
+      console.error('Lỗi khi mời thành viên:', error);
+      antdMessage.error('Không thể mời thành viên.');
+    }
+  };
+// view task
+const handleViewTasks = async (member) => {
+  try {
+    const response = await axios.get(`http://localhost:3001/api/tasks/user/${member.id}`);
+    const tasks = response.data.filter(task => task.team_id === selectedGroup.id);
+
+    Modal.info({
+      title: `Nhiệm vụ đã giao cho ${member.name}`,
+      content: tasks.length === 0 ? (
+        <Text>Chưa có nhiệm vụ nào.</Text>
+      ) : (
+        <div style={{ maxHeight: '400px', overflowY: 'auto' }}> {/* Giới hạn chiều cao và cho phép cuộn */}
+          <List
+            dataSource={tasks}
+            renderItem={task => (
+              <List.Item
+                actions={[
+                  <Button
+                    icon={<FormOutlined />}
+                    onClick={() => handleEditTaskModal(task)}  // Xử lý sửa nhiệm vụ
+                  >
+                    Sửa nhiệm vụ
+                  </Button>,
+                  <Button
+                    icon={<DeleteOutlined />}
+                    onClick={() => handleDeleteTask(task.id)}  // Xử lý xóa nhiệm vụ
+                  >
+                    Xóa nhiệm vụ
+                  </Button>
+                ]}
+              >
+                <Card>
+                  <Title level={5}>{task.title}</Title>
+                  <Text><strong>Mô tả:</strong> {task.description || 'Không có'}</Text><br />
+                  <Text><strong>Trạng thái:</strong> <Tag color="blue">{task.status}</Tag></Text><br />
+                  <Text><strong>Hạn chót:</strong> {task.deadline || 'Không có'}</Text>
+                </Card>
+              </List.Item>
+            )}
+          />
+        </div>
+      ),
+      width: 600,
+      footer: (
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => handleOpenAssignTaskModal(member)}  // Mở modal để giao nhiệm vụ mới
+          >
+            Thêm nhiệm vụ
+          </Button>
+        </div>
+      ),
+      style: { zIndex: 1001 },  // Đảm bảo modal luôn hiển thị trên các phần tử khác
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy nhiệm vụ đã giao:', error);
+    antdMessage.error('Không thể lấy nhiệm vụ');
+  }
+};
+
+const handleOpenAssignTaskModal = (member) => {
+  setSelectedMember(member);  // Lưu lại thành viên đang được giao nhiệm vụ
+  setIsAssignTaskModalOpen(true);  // Mở modal giao nhiệm vụ
+};
+// sửa task
+  const handleEditTask = async () => {
+    if (!newTask.title.trim()) {
+      antdMessage.warning('Tiêu đề nhiệm vụ không được để trống.');
+      return;
+    }
+    if (!newTask.deadline) {
+      antdMessage.warning('Chọn hạn chót cho nhiệm vụ.');
+      return;
+    }
+
+    try {
+      const formattedDeadline = newTask.deadline ? newTask.deadline.format('YYYY-MM-DD') : null;
+
+      await axios.put(`http://localhost:3001/api/tasks/update/${selectedTask.id}`, {
+        ...newTask,
+        deadline: formattedDeadline,
+      });
+
+      antdMessage.success('Cập nhật nhiệm vụ thành công!');
+      setIsAssignTaskModalOpen(false); // Đóng modal sau khi sửa nhiệm vụ
+      setNewTask({ title: '', description: '', status: 'pending', deadline: null });
+      setSelectedTask(null); // Reset selected task
+    } catch (error) {
+      console.error('Lỗi khi cập nhật nhiệm vụ:', error);
+      antdMessage.error('Cập nhật nhiệm vụ thất bại!');
+    }
+  };
+  const handleEditTaskModal = (task) => {
+    setSelectedTask(task); // Lưu lại nhiệm vụ cần sửa
+    setNewTask({
+      title: task.title,
+      description: task.description,
+      status: task.status,
+      deadline: task.deadline ? dayjs(task.deadline) : null  // Chuyển deadline về dạng dayjs
+    });
+    setIsAssignTaskModalOpen(true); // Mở modal để chỉnh sửa
+  };
+// xóa task
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await axios.delete(`http://localhost:3001/api/tasks/delete/${taskId}`);
+      antdMessage.success('Đã xóa nhiệm vụ');
+      // Refresh danh sách nhiệm vụ sau khi xóa
+      setSelectedGroup(prev => ({ ...prev }));
+    } catch (error) {
+      console.error('Lỗi khi xóa nhiệm vụ:', error);
+      antdMessage.error('Không thể xóa nhiệm vụ');
+    }
+  };
+
+  // Xóa thành viên khỏi nhóm
+  const handleRemoveMember = async (memberId) => {
+    try {
+      await axios.delete('http://localhost:3001/api/teams/remove-member', {
+        data: {
+          team_id: selectedGroup.id,
+          user_id: memberId,
+        },
+      });
+      
+    } catch (error) {
+      console.error('Lỗi khi xóa thành viên:', error);
+      antdMessage.error('Không thể xóa thành viên');
+    }
+    setMembers(prev => prev.filter(member => member.id !== memberId));
+
+  };
+
   return (
     <div style={{ padding: 24 }}>
       <Title level={3}><TeamOutlined /> Nhóm bạn đã tạo</Title>
       {adminGroups.length === 0 ? (
-        <Empty description="Bạn chưa tạo nhóm nào." style={{ marginTop: 50 }} />
+        <Empty description="Bạn chưa tạo nhóm nào. Hãy tạo nhóm mới!" style={{ marginTop: 50 }} />
       ) : (
         <List
           grid={{ gutter: 16, column: 2 }}
-          dataSource={adminGroups}
+          dataSource={adminGroups.slice().reverse()}
           renderItem={group => (
             <List.Item>
               <Card
@@ -98,35 +314,84 @@ function MyGroupsAsAdmin({ user, groups }) {
       <br />
       <Button type="primary" onClick={handleCreateGroup}>Tạo nhóm</Button>
 
-      {/* Modal khi click vào nhóm */}
       <Modal
         title={`Chi tiết nhóm: ${selectedGroup?.name}`}
         open={isModalOpen}
         onCancel={closeModal}
-        footer={<Button onClick={closeModal}>Đóng</Button>}>
+        footer={<Button onClick={closeModal}>Đóng</Button>
+      }
+      >
         <Divider />
-        <Title level={5}>Danh sách thành viên: </Title>
-        {tasks.length === 0 ? (
-          <Empty description="Không có nhiệm vụ nào." />
+        <Title level={5}>Danh sách thành viên:</Title>
+        {members.length === 0 ? (
+          <Empty description="Không có thành viên nào." />
         ) : (
           <List
-            itemLayout="vertical"
-            dataSource={tasks}
-            renderItem={task => (
-              <List.Item key={task.id}>
-                <Card>
-                  <Title level={5}>{task.title}</Title>
-                  <Text><strong>Mô tả:</strong> {task.description || 'Không có'}</Text><br />
-                  <Text><strong>Trạng thái:</strong> <Tag color="blue">{task.status}</Tag></Text><br />
-                  <Text><strong>Hạn chót:</strong> {task.deadline || 'Không có'}</Text>
-                </Card>
+            itemLayout="horizontal"
+            dataSource={members}
+            renderItem={member => (
+              <List.Item
+                actions={[
+                  <Button onClick={() => handleViewTasks(member)}>Xem nhiệm vụ</Button>,
+                  <Button danger onClick={() => handleRemoveMember(member.id)}>Xóa</Button>
+                ]}
+              >
+                <List.Item.Meta
+                  avatar={<Avatar icon={<UserOutlined />} />}
+                  title={member.name}
+                  description={`Telegram ID: ${member.telegram_id}`}
+                />
               </List.Item>
             )}
           />
         )}
+
+        <Divider />
+        <Title level={5}>Mời thêm thành viên</Title>
+        <Space>
+          <Input
+            placeholder="Nhập Telegram ID"
+            value={telegramId}
+            onChange={(e) => setTelegramId(e.target.value)}
+            style={{ width: 300 }}
+          />
+          <Button type="primary" onClick={handleInviteMember}>Mời</Button>
+        </Space>
+      </Modal>
+
+      <Modal
+        title={selectedTask ? 'Chỉnh sửa nhiệm vụ' : 'Giao nhiệm vụ mới'}
+        open={isAssignTaskModalOpen}
+        onCancel={() => {
+          setIsAssignTaskModalOpen(false);
+          setNewTask({ title: '', description: '', status: 'pending', deadline: null });
+          setSelectedTask(null);
+        }}
+        onOk={selectedTask ? handleEditTask : handleAssignTask}
+        okText={selectedTask ? 'Cập nhật' : 'Giao nhiệm vụ'}
+        style={{ zIndex: 1100 }}
+      >
+        <Input
+          placeholder="Tiêu đề nhiệm vụ"
+          value={newTask.title}
+          onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
+          style={{ marginBottom: 10 }}
+        />
+        <Input.TextArea
+          rows={4}
+          placeholder="Mô tả nhiệm vụ"
+          value={newTask.description}
+          onChange={(e) => setNewTask(prev => ({ ...prev, description: e.target.value }))}
+          style={{ marginBottom: 10 }}
+        />
+        <DatePicker
+          placeholder="Chọn hạn chót"
+          value={newTask.deadline}
+          onChange={(date) => setNewTask(prev => ({ ...prev, deadline: date }))}
+          style={{ width: '100%' }}
+        />
       </Modal>
     </div>
   );
 }
-
 export default MyGroupsAsAdmin;

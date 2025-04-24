@@ -24,26 +24,43 @@ router.post('/create', (req, res) => {
 });
 // ✅ Mời user vào nhóm
 router.post('/invite', (req, res) => {
-  const { team_id, user_id } = req.body;
-  const checkSql = 'SELECT * FROM team_members WHERE team_id = ? AND user_id = ?';
-  db.query(checkSql, [team_id, user_id], (err, results) => {
-    if (err) return res.status(500).json({ error: 'Lỗi khi kiểm tra thành viên nhóm' });
+  const { team_id, telegram_id } = req.body;
+  
+  // Tìm user_id từ telegram_id
+  const userSql = 'SELECT id FROM users WHERE telegram_id = ?';
+  db.query(userSql, [telegram_id], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Lỗi khi tìm kiếm người dùng' });
 
-    if (results.length > 0) {
-      return res.status(400).json({ message: 'Người dùng đã có trong nhóm' });
+    if (results.length === 0) {
+      return res.status(400).json({ message: 'Không tìm thấy người dùng với ID Telegram này' });
     }
 
-    const inviteSql = 'INSERT INTO team_members (team_id, user_id, role) VALUES (?, ?, ?)';
-  db.query(inviteSql, [team_id, user_id, 'user'], (err2) => {
-      if (err2) {
-        console.error('Lỗi khi thêm user vào nhóm:', err2);
-        return res.status(500).json({ error: 'Không thể thêm user vào nhóm' });
+    const user_id = results[0].id;
+
+    // Kiểm tra xem người dùng đã có trong nhóm chưa
+    const checkSql = 'SELECT * FROM team_members WHERE team_id = ? AND user_id = ?';
+    db.query(checkSql, [team_id, user_id], (err2, results2) => {
+      if (err2) return res.status(500).json({ error: 'Lỗi khi kiểm tra thành viên nhóm' });
+
+      if (results2.length > 0) {
+        return res.status(400).json({ message: 'Người dùng đã có trong nhóm' });
       }
 
-      res.status(200).json({ message: 'Đã thêm user vào nhóm' });
+      // Mời người dùng vào nhóm
+      const inviteSql = 'INSERT INTO team_members (team_id, user_id, role) VALUES (?, ?, ?)';
+      db.query(inviteSql, [team_id, user_id, 'user'], (err3) => {
+        if (err3) {
+          console.error('Lỗi khi thêm user vào nhóm:', err3);
+          return res.status(500).json({ error: 'Không thể thêm user vào nhóm' });
+        }
+
+        res.status(200).json({ message: 'Đã thêm user vào nhóm' });
+      });
     });
   });
 });
+
+
 // ✅ Lấy danh sách nhóm
 router.get('/', (req, res) => {
   const sql = 'SELECT * FROM teams';
@@ -91,6 +108,18 @@ router.get('/by-user/:userId', (req, res) => {
       return res.status(500).json({ error: 'Không thể lấy danh sách nhóm của user' });
     }
 
+    res.status(200).json(results);
+  });
+});
+// Lấy nhiệm vụ của một thành viên trong nhóm
+router.get('/by-member/:team_id/:user_id', (req, res) => {
+  const { team_id, user_id } = req.params;
+  const sql = `
+    SELECT * FROM tasks
+    WHERE team_id = ? AND assigned_to = ?
+  `;
+  db.query(sql, [team_id, user_id], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Lỗi lấy nhiệm vụ' });
     res.status(200).json(results);
   });
 });
