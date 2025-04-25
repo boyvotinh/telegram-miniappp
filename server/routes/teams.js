@@ -61,18 +61,18 @@ router.post('/invite', (req, res) => {
 });
 
 
-// ✅ Lấy danh sách nhóm
-router.get('/', (req, res) => {
-  const sql = 'SELECT * FROM teams';
-  db.query(sql, (err, results) => {
-    if (err) {
-      console.error('Lỗi lấy nhóm:', err);
-      return res.status(500).json({ error: 'Lỗi khi lấy danh sách nhóm' });
-    }
-    res.status(200).json(results);
-  });
-});
-// ✅ Lấy danh sách thành viên của một nhóm
+// // Lấy danh sách nhóm
+// router.get('/', (req, res) => {
+//   const sql = 'SELECT * FROM teams';
+//   db.query(sql, (err, results) => {
+//     if (err) {
+//       console.error('Lỗi lấy nhóm:', err);
+//       return res.status(500).json({ error: 'Lỗi khi lấy danh sách nhóm' });
+//     }
+//     res.status(200).json(results);
+//   });
+// });
+// Lấy danh sách thành viên của một nhóm
 router.get('/:id/members', (req, res) => {
   const teamId = req.params.id;
   const sql = `

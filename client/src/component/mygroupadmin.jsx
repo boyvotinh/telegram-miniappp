@@ -24,7 +24,6 @@ function MyGroupsAsAdmin({ user, groups }) {
     status: 'pending', 
     deadline: null
   });
-  const [selectedMember, setSelectedMember] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
 
   // Lấy danh sách thành viên khi nhóm được chọn
@@ -108,11 +107,16 @@ const handleAssignTask = async () => {
       team_id: selectedGroup.id,  // Gán nhóm vào nhiệm vụ
       deadline: formattedDeadline,  // Đảm bảo deadline được gửi đúng định dạng
     });
+    console.log('Nhiệm vụ được giao:', response.data);
 
     // Hiển thị thông báo thành công và đóng modal
     antdMessage.success('Giao nhiệm vụ thành công!');
     setIsAssignTaskModalOpen(false);  // Đóng modal thêm nhiệm vụ
-    setNewTask({ title: '', description: '', status: 'pending', deadline: null });  // Reset form
+    setNewTask({ title: '', description: '', status: 'pending', deadline: null });// Reset form
+    setTasks(prevTasks => [
+      ...prevTasks,
+      { id: response.data.taskId, title: newTask.title, description: newTask.description, status: 'pending', deadline: formattedDeadline },
+    ]);
   } catch (error) {
     console.error('Lỗi khi giao nhiệm vụ:', error);
     antdMessage.error('Giao nhiệm vụ thất bại!');
@@ -143,67 +147,25 @@ const handleAssignTask = async () => {
     }
   };
 // view task
+const [isModalVisible, setIsModalVisible] = useState(false);
+const [tasks, setTasks] = useState([]);
+const [selectedMember, setSelectedMember] = useState(null);
+
 const handleViewTasks = async (member) => {
   try {
     const response = await axios.get(`http://localhost:3001/api/tasks/user/${member.id}`);
-    const tasks = response.data.filter(task => task.team_id === selectedGroup.id);
-
-    Modal.info({
-      title: `Nhiệm vụ đã giao cho ${member.name}`,
-      content: tasks.length === 0 ? (
-        <Text>Chưa có nhiệm vụ nào.</Text>
-      ) : (
-        <div style={{ maxHeight: '400px', overflowY: 'auto' }}> {/* Giới hạn chiều cao và cho phép cuộn */}
-          <List
-            dataSource={tasks}
-            renderItem={task => (
-              <List.Item
-                actions={[
-                  <Button
-                    icon={<FormOutlined />}
-                    onClick={() => handleEditTaskModal(task)}  // Xử lý sửa nhiệm vụ
-                  >
-                    Sửa nhiệm vụ
-                  </Button>,
-                  <Button
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleDeleteTask(task.id)}  // Xử lý xóa nhiệm vụ
-                  >
-                    Xóa nhiệm vụ
-                  </Button>
-                ]}
-              >
-                <Card>
-                  <Title level={5}>{task.title}</Title>
-                  <Text><strong>Mô tả:</strong> {task.description || 'Không có'}</Text><br />
-                  <Text><strong>Trạng thái:</strong> <Tag color="blue">{task.status}</Tag></Text><br />
-                  <Text><strong>Hạn chót:</strong> {task.deadline || 'Không có'}</Text>
-                </Card>
-              </List.Item>
-            )}
-          />
-        </div>
-      ),
-      width: 600,
-      footer: (
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => handleOpenAssignTaskModal(member)}  // Mở modal để giao nhiệm vụ mới
-          >
-            Thêm nhiệm vụ
-          </Button>
-        </div>
-      ),
-      style: { zIndex: 1001 },  // Đảm bảo modal luôn hiển thị trên các phần tử khác
-    });
+    const memberTasks = response.data.filter(task => task.team_id === selectedGroup.id);
+    setTasks(memberTasks); // Cập nhật danh sách nhiệm vụ
+    setSelectedMember(member); // Cập nhật thành viên được chọn
+    setIsModalVisible(true); // Mở modal
   } catch (error) {
     console.error('Lỗi khi lấy nhiệm vụ đã giao:', error);
     antdMessage.error('Không thể lấy nhiệm vụ');
   }
 };
-
+const handleCancel = () => {
+  setIsModalVisible(false); // Đóng modal
+};
 const handleOpenAssignTaskModal = (member) => {
   setSelectedMember(member);  // Lưu lại thành viên đang được giao nhiệm vụ
   setIsAssignTaskModalOpen(true);  // Mở modal giao nhiệm vụ
@@ -252,7 +214,7 @@ const handleOpenAssignTaskModal = (member) => {
       await axios.delete(`http://localhost:3001/api/tasks/delete/${taskId}`);
       antdMessage.success('Đã xóa nhiệm vụ');
       // Refresh danh sách nhiệm vụ sau khi xóa
-      setSelectedGroup(prev => ({ ...prev }));
+      setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
     } catch (error) {
       console.error('Lỗi khi xóa nhiệm vụ:', error);
       antdMessage.error('Không thể xóa nhiệm vụ');
@@ -391,6 +353,56 @@ const handleOpenAssignTaskModal = (member) => {
           style={{ width: '100%' }}
         />
       </Modal>
+      <Modal
+      title={`Nhiệm vụ đã giao cho ${selectedMember?.name}`}
+      open={isModalVisible}
+      onCancel={handleCancel}
+      footer={[
+        <Button
+          key="add"
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => handleOpenAssignTaskModal(selectedMember)}
+        >
+          Thêm nhiệm vụ
+        </Button>
+      ]}
+    >
+      {tasks.length === 0 ? (
+        <Text>Chưa có nhiệm vụ nào.</Text>
+      ) : (
+        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+          <List
+            dataSource={tasks}
+            renderItem={task => (
+              <List.Item
+                actions={[
+                  <Button
+                    icon={<FormOutlined />}
+                    onClick={() => handleEditTaskModal(task)}
+                  >
+                    Sửa nhiệm vụ
+                  </Button>,
+                  <Button
+                    icon={<DeleteOutlined />}
+                    onClick={() => handleDeleteTask(task.id)}
+                  >
+                    Xóa nhiệm vụ
+                  </Button>
+                ]}
+              >
+                <Card>
+                  <Title level={5}>{task.title}</Title>
+                  <Text><strong>Mô tả:</strong> {task.description || 'Không có'}</Text><br />
+                  <Text><strong>Trạng thái:</strong> <Tag color="blue">{task.status}</Tag></Text><br />
+                  <Text><strong>Hạn chót:</strong> {task.deadline || 'Không có'}</Text>
+                </Card>
+              </List.Item>
+            )}
+          />
+        </div>
+      )}
+    </Modal>
     </div>
   );
 }

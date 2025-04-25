@@ -1,14 +1,30 @@
 const db = require('./db');
+const TelegramBot = require('node-telegram-bot-api');
+
+// Giả sử bạn đã tạo bot và lấy token ở đây
+const bot = new TelegramBot('7969413948:AAE9vunRbOAlA-LF9v901A_vgjxXaMAHRw0', { polling: true });
+
 bot.onText(/\/start/, (msg) => {
   const telegramId = msg.from.id;
   const name = msg.from.username || msg.from.first_name;
-  // Kiểm tra user có tồn tại chưa
+
+  // Lưu user như cậu đang làm
   db.query('SELECT * FROM users WHERE telegram_id = ?', [telegramId], (err, results) => {
     if (err) return console.error(err);
     if (results.length === 0) {
-      // Chưa có => thêm mới
       db.query('INSERT INTO users (telegram_id, name) VALUES (?, ?)', [telegramId, name]);
     }
-    bot.sendMessage(msg.chat.id, `Chào ${name}!`);
+
+    // Gửi nút mở Mini App
+    bot.sendMessage(msg.chat.id, `Chào ${name}! Nhấn vào nút bên dưới để bắt đầu.`, {
+      reply_markup: {
+        inline_keyboard: [[
+          {
+            text: "🚀 Mở ứng dụng",
+            web_app: { url: "https://your-miniapp-url.vercel.app" } // Đặt link Mini App vào đây
+          }
+        ]]
+      }
+    });
   });
 });
