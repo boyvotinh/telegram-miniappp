@@ -31,7 +31,7 @@ function MyGroupsAsAdmin({ user, groups }) {
     if (selectedGroup) {
       const fetchMembers = async () => {
         try {
-          const response = await axios.get(`http://localhost:3001/api/teams/${selectedGroup.id}/members`);
+          const response = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/${selectedGroup.id}/members`);
           setMembers(response.data.members);
         } catch (error) {
           console.error('Lỗi khi lấy thành viên:', error);
@@ -48,7 +48,7 @@ function MyGroupsAsAdmin({ user, groups }) {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:3001/api/teams/create', {
+      const response = await axios.post('https://telegram-miniappp.onrender.com/api/teams/create', {
         name: groupName,
         created_by: user.id
       });
@@ -101,7 +101,7 @@ const handleAssignTask = async () => {
     const formattedDeadline = newTask.deadline ? newTask.deadline.format('YYYY-MM-DD') : null;
 
     // Gửi dữ liệu lên backend
-    const response = await axios.post('http://localhost:3001/api/tasks/assign', {
+    const response = await axios.post('https://telegram-miniappp.onrender.com/api/tasks/assign', {
       ...newTask,
       assigned_to: selectedMember.id,  // Gán thành viên vào nhiệm vụ
       team_id: selectedGroup.id,  // Gán nhóm vào nhiệm vụ
@@ -131,7 +131,7 @@ const handleAssignTask = async () => {
     }
   
     try {
-      await axios.post('http://localhost:3001/api/teams/invite', {
+      await axios.post('https://telegram-miniappp.onrender.com/api/teams/invite', {
         team_id: selectedGroup.id,
         telegram_id: telegramId
       });
@@ -139,7 +139,7 @@ const handleAssignTask = async () => {
       antdMessage.success('Đã mời thành viên thành công!');
       setTelegramId('');
       // Gọi lại API để load lại danh sách thành viên
-      const response = await axios.get(`http://localhost:3001/api/teams/${selectedGroup.id}/members`);
+      const response = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/${selectedGroup.id}/members`);
       setMembers(response.data.members);
     } catch (error) {
       console.error('Lỗi khi mời thành viên:', error);
@@ -153,7 +153,7 @@ const [selectedMember, setSelectedMember] = useState(null);
 
 const handleViewTasks = async (member) => {
   try {
-    const response = await axios.get(`http://localhost:3001/api/tasks/user/${member.id}`);
+    const response = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${member.id}`);
     const memberTasks = response.data.filter(task => task.team_id === selectedGroup.id);
     setTasks(memberTasks); // Cập nhật danh sách nhiệm vụ
     setSelectedMember(member); // Cập nhật thành viên được chọn
@@ -184,7 +184,7 @@ const handleOpenAssignTaskModal = (member) => {
     try {
       const formattedDeadline = newTask.deadline ? newTask.deadline.format('YYYY-MM-DD') : null;
 
-      await axios.put(`http://localhost:3001/api/tasks/update/${selectedTask.id}`, {
+      await axios.put(`https://telegram-miniappp.onrender.com/api/tasks/update/${selectedTask.id}`, {
         ...newTask,
         deadline: formattedDeadline,
       });
@@ -211,7 +211,7 @@ const handleOpenAssignTaskModal = (member) => {
 // xóa task
   const handleDeleteTask = async (taskId) => {
     try {
-      await axios.delete(`http://localhost:3001/api/tasks/delete/${taskId}`);
+      await axios.delete(`https://telegram-miniappp.onrender.com/api/tasks/delete/${taskId}`);
       antdMessage.success('Đã xóa nhiệm vụ');
       // Refresh danh sách nhiệm vụ sau khi xóa
       setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
@@ -224,7 +224,7 @@ const handleOpenAssignTaskModal = (member) => {
   // Xóa thành viên khỏi nhóm
   const handleRemoveMember = async (memberId) => {
     try {
-      await axios.delete('http://localhost:3001/api/teams/remove-member', {
+      await axios.delete('https://telegram-miniappp.onrender.com/api/teams/remove-member', {
         data: {
           team_id: selectedGroup.id,
           user_id: memberId,

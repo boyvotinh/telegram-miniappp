@@ -17,7 +17,7 @@ function MyGroupsAsUser({ user, groups }) {
     setIsModalOpen(true);
 
     try {
-      const response = await axios.get(`http://localhost:3001/api/tasks/user/${user.id}`);
+      const response = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${user.id}`);
       console.log('Dữ liệu nhiệm vụ:', response.data);
       setTasks(response.data);
     } catch (error) {
