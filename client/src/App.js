@@ -24,6 +24,9 @@ function App() {
 
       const user = window.Telegram.WebApp.initDataUnsafe?.user;
       console.log("User từ Telegram:", user);
+      console.log("window.Telegram.WebApp.initDataUnsafe:", window.Telegram.WebApp.initDataUnsafe);
+      console.log("window.Telegram.WebApp.initData:", window.Telegram.WebApp.initData);
+
 
       if (!user) {
         console.error("⚡ WebApp initDataUnsafe không có user. Có thể do không mở từ Telegram hoặc chưa gửi user data.");
