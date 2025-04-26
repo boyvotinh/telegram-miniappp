@@ -57,6 +57,15 @@ function App() {
       setLoading(false);
     }
   }, []);
+  if (!window.Telegram?.WebApp?.initDataUnsafe?.user) {
+    return (
+      <div>
+        ❌ Không thể lấy dữ liệu người dùng.<br />
+        Vui lòng mở ứng dụng này trong Telegram bằng cách bấm vào link:
+        <a href={window.Telegram?.WebApp?.initData || "https://t.me/test20214bot"}>👉 Mở lại Mini App trong Telegram</a>
+      </div>
+    );
+  }
 
   if (loading) {
     return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
@@ -73,15 +82,7 @@ function App() {
       </div>
     );
   }
-
-  if (loading) {
-    return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
-  }
-
-  if (!user) {
-    return <div>Unable to fetch user data.</div>;
-  }
-
+  
   const createdGroups = groups.filter(group => group.role === 'admin');
   const memberGroups = groups.filter(group => group.role !== 'admin');
 
@@ -142,9 +143,10 @@ function App() {
 
         <Content style={{ padding: '0 50px', marginTop: '20px' }}>
           <div className="site-layout-content">
-            <Title level={2} style={{ textAlign: 'center' }}>
-              Hello, {user.first_name} {user.last_name}
-            </Title>
+          <Title level={2} style={{ textAlign: 'center' }}>
+            Hello, {user.name}
+          </Title>
+
 
             <Routes>
               <Route path="/" element={<Navigate to="/my-tasks" replace />} />
