@@ -26,6 +26,7 @@ function App() {
     async function fetchUserInfo() {
       try {
         const telegram_id = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+        console.log(telegram_id)
         if (!telegram_id) {
           console.error("Không thể lấy telegram_id từ Telegram WebApp");
           setLoading(false);
