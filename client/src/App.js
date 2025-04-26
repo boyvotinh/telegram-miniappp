@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-ro
 import axios from 'axios';
 import { Layout, Menu, Spin, Typography, Drawer, Button } from 'antd';
 import { HomeOutlined, GroupOutlined, TeamOutlined, MenuOutlined } from '@ant-design/icons';
-import MyGroupsAsAdmin from './component/mygroupadmin'; // component cho người tạo nhóm
-import MyGroups from './component/mygropeusers'; // component cho người dùng
+import MyGroupsAsAdmin from './component/mygroupadmin';
+import MyGroups from './component/mygropeusers';
 import MyTasks from './component/mytask';
 
 const { Header, Content, Footer } = Layout;
@@ -19,32 +19,36 @@ function App() {
   const [selectedMenuKey, setSelectedMenuKey] = useState('1');
 
   useEffect(() => {
-    if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.ready();
-    
-      const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
-    
-      if (initDataUnsafe) {
-        const telegramUser = initDataUnsafe.user;
-    
-        if (telegramUser) {
-          console.log('User data:', telegramUser);
-          setUser(telegramUser);  // Set user data directly
+    const initUser = () => {
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+
+        const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+
+        if (initDataUnsafe?.user) {
+          console.log('User data:', initDataUnsafe.user);
+          setUser(initDataUnsafe.user);
         } else {
-          console.error('Không thể lấy dữ liệu người dùng.');
-          alert('Không thể lấy dữ liệu người dùng.');
-          setLoading(false);
+          console.warn('Không tìm thấy user từ Telegram. Fake user...');
+          fakeUser();
         }
       } else {
-        console.error('initDataUnsafe is not available.');
-        alert('Không thể lấy dữ liệu từ WebApp.');
-        setLoading(false);
+        console.warn('Telegram WebApp không tồn tại. Fake user...');
+        fakeUser();
       }
-    } else {
-      console.error('Telegram WebApp is not available.');
-      alert('Ứng dụng Telegram không được tải đúng cách.');
-      setLoading(false);
-    }
+    };
+
+    const fakeUser = () => {
+      const mockUser = {
+        id: 123456789,
+        first_name: "Test",
+        last_name: "User",
+        username: "testuser",
+      };
+      setUser(mockUser);
+    };
+
+    initUser();
   }, []);
 
   useEffect(() => {
@@ -74,16 +78,12 @@ function App() {
   if (loading) {
     return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
   }
-  
+
   if (!user) {
-    alert("⚡ WebApp initDataUnsafe không có user. Có thể do không mở từ Telegram hoặc chưa gửi user data.");
     return (
       <div style={{ textAlign: 'center', marginTop: 100 }}>
         <h2>❌ Không thể lấy dữ liệu người dùng.</h2>
-        <p>Vui lòng mở ứng dụng này thông qua Telegram bằng cách bấm vào link:</p>
-        <a href="https://t.me/test20214bot/my_app" target="_blank" rel="noopener noreferrer">
-          👉 Mở lại Mini App trong Telegram
-        </a>
+        <p>Vui lòng mở ứng dụng này thông qua Telegram hoặc sử dụng bản test local.</p>
       </div>
     );
   }
@@ -105,7 +105,6 @@ function App() {
   return (
     <Router>
       <Layout style={{ minHeight: '100vh' }}>
-        {/* Drawer (sidebar) */}
         <Drawer
           title="Menu"
           placement="left"
@@ -120,8 +119,8 @@ function App() {
             selectedKeys={[selectedMenuKey]}
             onClick={handleMenuClick}
             style={{
-              backgroundColor: '#001529',  // Thay đổi màu nền của menu
-              color: '#ffffff',            // Màu chữ
+              backgroundColor: '#001529',
+              color: '#ffffff',
             }}
           >
             <Menu.Item key="1" icon={<HomeOutlined />}>
