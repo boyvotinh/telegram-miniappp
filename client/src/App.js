@@ -19,18 +19,18 @@ function App() {
   const [selectedMenuKey, setSelectedMenuKey] = useState('1');
 
   useEffect(() => {
-    if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
+    if (window.Telegram?.WebApp) {
       window.Telegram.WebApp.ready();
-  
+
       const user = window.Telegram.WebApp.initDataUnsafe?.user;
       console.log("User từ Telegram:", user);
-  
+
       if (!user) {
-        console.error("⚡ WebApp initDataUnsafe không có user.");
+        console.error("⚡ WebApp initDataUnsafe không có user. Có thể do không mở từ Telegram hoặc chưa gửi user data.");
         setLoading(false);
         return;
       }
-  
+
       async function fetchUserInfo() {
         try {
           const telegram_id = user.id;
@@ -38,10 +38,10 @@ function App() {
           const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegram_id}`);
           const userData = response.data;
           setUser(userData);
-  
+
           const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`);
           setGroups(groupsResponse.data);
-  
+
           const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`);
           setTasks(taskResponse.data);
         } catch (error) {
@@ -50,22 +50,13 @@ function App() {
           setLoading(false);
         }
       }
-  
+
       fetchUserInfo();
     } else {
       console.error("⚡ Không có window.Telegram.WebApp");
       setLoading(false);
     }
   }, []);
-  if (!window.Telegram?.WebApp?.initDataUnsafe?.user) {
-    return (
-      <div>
-        ❌ Không thể lấy dữ liệu người dùng.<br />
-        Vui lòng mở ứng dụng này trong Telegram bằng cách bấm vào link:
-        <a href={window.Telegram?.WebApp?.initData || "https://t.me/test20214bot"}>👉 Mở lại Mini App trong Telegram</a>
-      </div>
-    );
-  }
 
   if (loading) {
     return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
@@ -82,7 +73,15 @@ function App() {
       </div>
     );
   }
-  
+
+  if (loading) {
+    return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
+  }
+
+  if (!user) {
+    return <div>Unable to fetch user data.</div>;
+  }
+
   const createdGroups = groups.filter(group => group.role === 'admin');
   const memberGroups = groups.filter(group => group.role !== 'admin');
 
@@ -143,10 +142,9 @@ function App() {
 
         <Content style={{ padding: '0 50px', marginTop: '20px' }}>
           <div className="site-layout-content">
-          <Title level={2} style={{ textAlign: 'center' }}>
-            Hello, {user.name}
-          </Title>
-
+            <Title level={2} style={{ textAlign: 'center' }}>
+              Hello, {user.first_name} {user.last_name}
+            </Title>
 
             <Routes>
               <Route path="/" element={<Navigate to="/my-tasks" replace />} />
