@@ -1,3 +1,4 @@
+require('./bot'); // chạy file bot song song khi backend khởi động
 const express = require('express');
 const bodyParser = require('body-parser');
 const taskRoutes = require('./routes/tasks');
