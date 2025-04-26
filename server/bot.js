@@ -1,7 +1,7 @@
 const db = require('./db');
 const TelegramBot = require('node-telegram-bot-api');
 // Giả sử bạn đã tạo bot và lấy token ở đây
-const bot = new TelegramBot('7969413948:AAHVKr9OvRVkHTBSNecWDlEMiDZBn7mNcm4', { polling: false });
+const bot = new TelegramBot('7969413948:AAHVKr9OvRVkHTBSNecWDlEMiDZBn7mNcm4', { polling: true });
 bot.onText(/\/start/, (msg) => {
   const telegramId = msg.from.id;
   const name = msg.from.username || msg.from.first_name;
@@ -17,7 +17,7 @@ bot.onText(/\/start/, (msg) => {
         inline_keyboard: [[
           {
             text: "🚀 Mở ứng dụng",
-            web_app: { url: " t.me/test20214bot/my_app" } // Đặt link Mini App vào đây
+            web_app: { url: "https://t.me/test20214bot/my_app" } // Đặt link Mini App vào đây
           }
         ]]
       }
