@@ -2,7 +2,7 @@ const db = require('./db');
 const TelegramBot = require('node-telegram-bot-api');
 
 // Giả sử bạn đã tạo bot và lấy token ở đây
-const bot = new TelegramBot('7969413948:AAE9vunRbOAlA-LF9v901A_vgjxXaMAHRw0', { polling: true });
+const bot = new TelegramBot('7969413948:AAHVKr9OvRVkHTBSNecWDlEMiDZBn7mNcm4', { polling: true });
 
 bot.onText(/\/start/, (msg) => {
   const telegramId = msg.from.id;
@@ -21,7 +21,7 @@ bot.onText(/\/start/, (msg) => {
         inline_keyboard: [[
           {
             text: "🚀 Mở ứng dụng",
-            web_app: { url: "https://your-miniapp-url.vercel.app" } // Đặt link Mini App vào đây
+            web_app: { url: "https://telegram-miniappp.vercel.app/" } // Đặt link Mini App vào đây
           }
         ]]
       }
