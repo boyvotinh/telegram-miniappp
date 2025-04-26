@@ -13,6 +13,7 @@ const { Title } = Typography;
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [telegramUser, setTelegramUser] = useState(null); 
   const [tasks, setTasks] = useState([]);
   const [groups, setGroups] = useState([]);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -21,43 +22,31 @@ function App() {
   useEffect(() => {
     if (window.Telegram?.WebApp) {
       window.Telegram.WebApp.ready();
-    
       const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
-    
-      if (initDataUnsafe) {
-        const telegramUser = initDataUnsafe.user;
-    
-        if (telegramUser) {
-          console.log('User data:', telegramUser);
-          setUser(telegramUser);  // Set user data directly
-        } else {
-          console.error('Không thể lấy dữ liệu người dùng.');
-          alert('Không thể lấy dữ liệu người dùng.');
-          setLoading(false);
-        }
+  
+      if (initDataUnsafe?.user) {
+        console.log('User từ Telegram:', initDataUnsafe.user);
+        setTelegramUser(initDataUnsafe.user);
       } else {
-        console.error('initDataUnsafe is not available.');
-        alert('Không thể lấy dữ liệu từ WebApp.');
+        alert('Không thể lấy dữ liệu người dùng từ Telegram.');
         setLoading(false);
       }
     } else {
-      console.error('Telegram WebApp is not available.');
       alert('Ứng dụng Telegram không được tải đúng cách.');
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {
-    if (user) {
+    if (telegramUser) {
       const fetchUserInfo = async () => {
         try {
-          const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${user.id}`);
+          const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegramUser.id}`);
           const userData = response.data;
           setUser(userData);
-
+  
           const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`);
           setGroups(groupsResponse.data);
-
+  
           const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`);
           setTasks(taskResponse.data);
         } catch (error) {
@@ -66,10 +55,11 @@ function App() {
           setLoading(false);
         }
       };
-
+  
       fetchUserInfo();
     }
-  }, [user]);
+  }, [telegramUser]);
+  
 
   if (loading) {
     return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
