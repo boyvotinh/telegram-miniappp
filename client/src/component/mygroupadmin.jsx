@@ -62,7 +62,14 @@ function MyGroupsAsAdmin({ user, groups }) {
       antdMessage.success('Tạo nhóm thành công!');
     } catch (error) {
       console.error('Lỗi khi tạo nhóm:', error);
-      antdMessage.error('Tạo nhóm thất bại!');
+      if (error.response) {
+        // Nếu server trả về lỗi
+        console.error('Lỗi từ server:', error.response.data);
+        antdMessage.error(error.response.data.error || 'Tạo nhóm thất bại!');
+      } else {
+        // Lỗi kết nối hoặc lỗi khác
+        antdMessage.error('Không thể kết nối tới máy chủ!');
+      }
     }
   };
 // thẻ nhóm
