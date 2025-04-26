@@ -17,7 +17,7 @@ bot.onText(/\/start/, (msg) => {
         inline_keyboard: [[
           {
             text: "🚀 Mở ứng dụng",
-            web_app: { url: "https://telegram-miniappp.vercel.app/" } // Đặt link Mini App vào đây
+            web_app: { url: " t.me/test20214bot/my_app" } // Đặt link Mini App vào đây
           }
         ]]
       }
