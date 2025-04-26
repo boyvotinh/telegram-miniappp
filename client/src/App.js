@@ -20,33 +20,33 @@ function App() {
 
   useEffect(() => {
     if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.ready(); // Đảm bảo Telegram WebApp sẵn sàng
+      window.Telegram.WebApp.ready();
     }
-  }, []);
+  
     async function fetchUserInfo() {
       try {
-        // const telegram_id = '123456789'; // Test ID (update as needed)
         const telegram_id = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
         if (!telegram_id) {
-          console.error("Không lấy được telegram_id");
+          console.error("Không thể lấy telegram_id từ Telegram WebApp");
           return;
         }
+  
         const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegram_id}`);
         const userData = response.data;
         setUser(userData);
-
+  
         const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`);
         setGroups(groupsResponse.data);
-
+  
         const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`);
         setTasks(taskResponse.data);
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error('Lỗi khi lấy thông tin người dùng:', error);
       } finally {
         setLoading(false);
       }
     }
-
+  
     fetchUserInfo();
   }, []);
 
