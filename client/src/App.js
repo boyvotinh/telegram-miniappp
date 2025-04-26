@@ -22,9 +22,11 @@ function App() {
   useEffect(() => {
     if (window.Telegram?.WebApp) {
       window.Telegram.WebApp.ready();
+  
+      const initData = window.Telegram.WebApp.initData;
       const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
   
-      if (initDataUnsafe?.user) {
+      if (initData && initDataUnsafe?.user) {
         console.log('User từ Telegram:', initDataUnsafe.user);
         setTelegramUser(initDataUnsafe.user);
       } else {
@@ -35,7 +37,7 @@ function App() {
       alert('Ứng dụng Telegram không được tải đúng cách.');
       setLoading(false);
     }
-  }, []);
+  }, []);  
   useEffect(() => {
     if (telegramUser) {
       const fetchUserInfo = async () => {
