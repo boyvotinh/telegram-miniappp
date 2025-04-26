@@ -64,7 +64,7 @@ function App() {
   }
   
   if (!user) {
-    alert("⚡ WebApp initDataUnsafe không có user. Có thể do không mở từ Telegram hoặc chưa gửi user data.");
+    alert(telegram_id);
     return (
       <div style={{ textAlign: 'center', marginTop: 100 }}>
         <h2>❌ Không thể lấy dữ liệu người dùng.</h2>
