@@ -1,7 +1,7 @@
 const db = require('./db');
 const TelegramBot = require('node-telegram-bot-api');
 // Giả sử bạn đã tạo bot và lấy token ở đây
-const bot = new TelegramBot('7969413948:AAHVKr9OvRVkHTBSNecWDlEMiDZBn7mNcm4', { polling: false });
+const bot = new TelegramBot('7969413948:AAHVKr9OvRVkHTBSNecWDlEMiDZBn7mNcm4', { polling: true });
 bot.onText(/\/start/, (msg) => {
   const telegramId = msg.from.id;
   const name = msg.from.username || msg.from.first_name;
