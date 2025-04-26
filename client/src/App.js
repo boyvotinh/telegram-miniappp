@@ -23,7 +23,7 @@ function App() {
     async function fetchUserInfo() {
       try {
         // Giả sử bạn đã có ID người dùng (dùng cho demo)
-        const telegram_id = 'some-telegram-id';  // Thay bằng ID thực tế hoặc lấy từ API
+        const telegram_id = '7455693143';  // Thay bằng ID thực tế hoặc lấy từ API
 
         // Gọi API để lấy thông tin người dùng
         const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegram_id}`);
