@@ -1,0 +1,20 @@
+# Thư mục node_modules chứa các gói npm cài đặt
+node_modules/
+
+# Tệp log
+*.log
+
+# Thư mục tạm thời (build, dist)
+build/
+dist/
+
+# Tệp môi trường (như .env)
+.env
+
+# Thư mục IDE (chẳng hạn .vscode hoặc .idea)
+.vscode/
+.idea/
+
+# Các tệp hệ thống (Windows, macOS)
+Thumbs.db
+.DS_Store
