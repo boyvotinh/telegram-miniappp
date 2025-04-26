@@ -1,21 +1,7 @@
-const express = require('express');
-const app = express();
-const bodyParser = require('body-parser');
 const db = require('./db');
 const TelegramBot = require('node-telegram-bot-api');
 
-app.use(bodyParser.json());
-
-const TOKEN = '7969413948:AAHVKr9OvRVkHTBSNecWDlEMiDZBn7mNcm4';
-const bot = new TelegramBot(TOKEN);
-
-// Đặt webhook URL
-bot.setWebHook('https://telegram-miniappp.onrender.com/bot' + TOKEN);
-
-app.post('/bot' + TOKEN, (req, res) => {
-  bot.processUpdate(req.body);
-  res.sendStatus(200);
-});
+const bot = new TelegramBot('7969413948:AAHVKr9OvRVkHTBSNecWDlEMiDZBn7mNcm4', { polling: true });
 
 bot.onText(/\/start/, (msg) => {
   const telegramId = msg.from.id;
@@ -25,16 +11,21 @@ bot.onText(/\/start/, (msg) => {
     if (err) return console.error(err);
 
     if (results.length === 0) {
+      // Nếu user CHƯA có thì mới insert
       db.query('INSERT INTO users (telegram_id, name) VALUES (?, ?)', [telegramId, name], (insertErr) => {
         if (insertErr) return console.error(insertErr);
+
+        // Sau khi insert xong, gửi nút Mini App
         sendWebAppButton(msg.chat.id, name);
       });
     } else {
+      // Nếu đã có user ➔ chỉ cần gửi nút
       sendWebAppButton(msg.chat.id, name);
     }
   });
 });
 
+// Hàm gửi nút WebApp
 function sendWebAppButton(chatId, name) {
   bot.sendMessage(chatId, `Chào ${name}! 🚀 Nhấn vào nút bên dưới để mở ứng dụng:`, {
     reply_markup: {
@@ -47,8 +38,3 @@ function sendWebAppButton(chatId, name) {
     }
   });
 }
-
-const PORT = 29651;
-app.listen(PORT, () => {
-  console.log('Server running on port', PORT);
-});
