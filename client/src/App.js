@@ -19,9 +19,18 @@ function App() {
   const [selectedMenuKey, setSelectedMenuKey] = useState('1');
 
   useEffect(() => {
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.ready(); // Đảm bảo Telegram WebApp sẵn sàng
+    }
+  }, []);
     async function fetchUserInfo() {
       try {
-        const telegram_id = '123456789'; // Test ID (update as needed)
+        // const telegram_id = '123456789'; // Test ID (update as needed)
+        const telegram_id = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+        if (!telegram_id) {
+          console.error("Không lấy được telegram_id");
+          return;
+        }
         const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegram_id}`);
         const userData = response.data;
         setUser(userData);
