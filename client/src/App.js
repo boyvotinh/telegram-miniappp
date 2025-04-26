@@ -24,9 +24,6 @@ function App() {
 
       const user = window.Telegram.WebApp.initDataUnsafe?.user;
       console.log("User từ Telegram:", user);
-      console.log("window.Telegram.WebApp.initDataUnsafe:", window.Telegram.WebApp.initDataUnsafe);
-      console.log("window.Telegram.WebApp.initData:", window.Telegram.WebApp.initData);
-
 
       if (!user) {
         console.error("⚡ WebApp initDataUnsafe không có user. Có thể do không mở từ Telegram hoặc chưa gửi user data.");
@@ -36,7 +33,7 @@ function App() {
 
       async function fetchUserInfo() {
         try {
-          const telegram_id = '7455693143';
+          const telegram_id = user.id;
           
           const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegram_id}`);
           const userData = response.data;
@@ -61,7 +58,11 @@ function App() {
     }
   }, []);
 
-  if (!user && !loading) {
+  if (loading) {
+    return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
+  }
+  
+  if (!user) {
     return (
       <div style={{ textAlign: 'center', marginTop: 100 }}>
         <h2>❌ Không thể lấy dữ liệu người dùng.</h2>
