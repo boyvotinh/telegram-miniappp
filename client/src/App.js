@@ -64,7 +64,11 @@ function App() {
   }
   
   if (!user) {
-    alert(telegram_id);
+    const telegram_id = window.Telegram.WebApp.initDataUnsafe?.user?.id;  // Or get telegram_id from the appropriate source
+
+    if (telegram_id) {
+      alert(telegram_id);
+    }
     return (
       <div style={{ textAlign: 'center', marginTop: 100 }}>
         <h2>❌ Không thể lấy dữ liệu người dùng.</h2>
