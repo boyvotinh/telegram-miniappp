@@ -19,49 +19,63 @@ function App() {
   const [selectedMenuKey, setSelectedMenuKey] = useState('1');
 
   useEffect(() => {
-    // Nếu không có window.Telegram.WebApp, hãy bỏ qua điều kiện này và lấy dữ liệu từ API trực tiếp
-    async function fetchUserInfo() {
-      try {
-        // Giả sử bạn đã có ID người dùng (dùng cho demo)
-        const telegram_id = '7455693143';  // Thay bằng ID thực tế hoặc lấy từ API
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.ready();
 
-        // Gọi API để lấy thông tin người dùng
-        const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegram_id}`);
-        const userData = response.data;
-        setUser(userData);
+      const user = window.Telegram.WebApp.initDataUnsafe?.user;
+      console.log("User từ Telegram:", user);
 
-        // Gọi API để lấy nhóm của người dùng
-        const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`);
-        setGroups(groupsResponse.data);
-
-        // Gọi API để lấy nhiệm vụ của người dùng
-        const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`);
-        setTasks(taskResponse.data);
-
-      } catch (error) {
-        console.error('Lỗi khi lấy thông tin người dùng:', error);
-      } finally {
+      if (!user) {
+        console.error("⚡ WebApp initDataUnsafe không có user. Có thể do không mở từ Telegram hoặc chưa gửi user data.");
         setLoading(false);
+        return;
       }
-    }
 
-    fetchUserInfo();
+      async function fetchUserInfo() {
+        try {
+          const telegram_id = '7455693143';
+          
+          const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegram_id}`);
+          const userData = response.data;
+          setUser(userData);
+
+          const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`);
+          setGroups(groupsResponse.data);
+
+          const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`);
+          setTasks(taskResponse.data);
+        } catch (error) {
+          console.error('Lỗi khi lấy thông tin người dùng:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      fetchUserInfo();
+    } else {
+      console.error("⚡ Không có window.Telegram.WebApp");
+      setLoading(false);
+    }
   }, []);
+
+  if (!user && !loading) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: 100 }}>
+        <h2>❌ Không thể lấy dữ liệu người dùng.</h2>
+        <p>Vui lòng mở ứng dụng này thông qua Telegram bằng cách bấm vào link:</p>
+        <a href="https://t.me/test20214bot/my_app" target="_blank" rel="noopener noreferrer">
+          👉 Mở lại Mini App trong Telegram
+        </a>
+      </div>
+    );
+  }
 
   if (loading) {
     return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
   }
 
   if (!user) {
-    return (
-      <div style={{ textAlign: 'center', marginTop: 100 }}>
-        <h2>❌ Không thể lấy dữ liệu người dùng.</h2>
-        <p>Vui lòng thử lại hoặc mở lại ứng dụng thông qua Telegram nếu cần thiết:</p>
-        <a href="https://t.me/test20214bot/my_app" target="_blank" rel="noopener noreferrer">
-          👉 Mở lại Mini App trong Telegram
-        </a>
-      </div>
-    );
+    return <div>Unable to fetch user data.</div>;
   }
 
   const createdGroups = groups.filter(group => group.role === 'admin');
