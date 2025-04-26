@@ -21,16 +21,16 @@ function App() {
   useEffect(() => {
     if (window.Telegram?.WebApp) {
       window.Telegram.WebApp.ready();
-  
+
       const user = window.Telegram.WebApp.initDataUnsafe?.user;
       console.log("User từ Telegram:", user);
-  
+
       if (!user) {
         console.error("⚡ WebApp initDataUnsafe không có user. Có thể do không mở từ Telegram hoặc chưa gửi user data.");
         setLoading(false);
         return;
       }
-  
+
       async function fetchUserInfo() {
         try {
           const telegram_id = user.id;
@@ -38,10 +38,10 @@ function App() {
           const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegram_id}`);
           const userData = response.data;
           setUser(userData);
-  
+
           const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`);
           setGroups(groupsResponse.data);
-  
+
           const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`);
           setTasks(taskResponse.data);
         } catch (error) {
@@ -50,13 +50,14 @@ function App() {
           setLoading(false);
         }
       }
-  
+
       fetchUserInfo();
     } else {
       console.error("⚡ Không có window.Telegram.WebApp");
       setLoading(false);
     }
   }, []);
+
   if (!user && !loading) {
     return (
       <div style={{ textAlign: 'center', marginTop: 100 }}>
