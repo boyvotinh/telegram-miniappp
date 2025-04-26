@@ -64,7 +64,6 @@ function App() {
   }
   
   if (!user) {
-    alert(JSON.stringify(window.Telegram.WebApp.initDataUnsafe));
     return (
       <div style={{ textAlign: 'center', marginTop: 100 }}>
         <h2>❌ Không thể lấy dữ liệu người dùng.</h2>
