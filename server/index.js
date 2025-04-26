@@ -15,3 +15,7 @@ app.use('/api/teams', teamRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/uploads', express.static('uploads'));
+console.log("Teams routes mounted");
+app.listen(port, () => {
+  console.log(`Server đang chạy ở http://localhost:${port}`);
+});
