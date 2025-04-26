@@ -6,7 +6,6 @@ const teamRoutes = require('./routes/teams');
 const submissionRoutes = require('./routes/submissions');
 const cors = require('cors')
 const app = express();
-const port = 3001;
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -16,7 +15,3 @@ app.use('/api/teams', teamRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/uploads', express.static('uploads'));
-console.log("Teams routes mounted");
-app.listen(port, () => {
-  console.log(`Server đang chạy ở http://localhost:${port}`);
-});
