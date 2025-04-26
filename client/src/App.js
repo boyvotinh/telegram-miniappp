@@ -28,6 +28,7 @@ function App() {
         const telegram_id = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
         if (!telegram_id) {
           console.error("Không thể lấy telegram_id từ Telegram WebApp");
+          setLoading(false);
           return;
         }
   
@@ -49,6 +50,17 @@ function App() {
   
     fetchUserInfo();
   }, []);
+  if (!user && !loading) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: 100 }}>
+        <h2>❌ Không thể lấy dữ liệu người dùng.</h2>
+        <p>Vui lòng mở ứng dụng này thông qua Telegram bằng cách bấm vào link:</p>
+        <a href="https://t.me/test20214bot/my_app" target="_blank" rel="noopener noreferrer">
+          👉 Mở lại Mini App trong Telegram
+        </a>
+      </div>
+    );
+  }
 
   if (loading) {
     return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
