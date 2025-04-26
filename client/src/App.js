@@ -26,7 +26,7 @@ function App() {
       console.log("User từ Telegram:", user);
 
       if (!user) {
-        console.error("⚡ WebApp initDataUnsafe không có user. Có thể do không mở từ Telegram hoặc chưa gửi user data.");
+        alert("⚡ WebApp initDataUnsafe không có user. Có thể do không mở từ Telegram hoặc chưa gửi user data.");
         setLoading(false);
         return;
       }
