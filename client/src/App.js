@@ -53,16 +53,6 @@ function App() {
 
       fetchUserInfo();
     }
-    if (!window.Telegram?.WebApp.initDataUnsafe?.user) {
-      console.warn("🔎 User chưa đăng nhập. Có thể đang mở ngoài Telegram.");
-  
-      // Nếu user mở ở ngoài Telegram -> hiện nút redirect.
-      setTimeout(() => {
-        if (!window.Telegram?.WebApp.initDataUnsafe?.user) {
-          window.location.href = "https://t.me/test20214bot/my_app";
-        }
-      }, 3000); // Đợi 3 giây mới auto redirect
-    }
     else {
       console.error("⚡ Không có window.Telegram.WebApp");
       setLoading(false);
