@@ -64,9 +64,11 @@ function App() {
   }
   
   if (!user) {
+    alert(JSON.stringify(window.Telegram.WebApp.initDataUnsafe));
     return (
       <div style={{ textAlign: 'center', marginTop: 100 }}>
         <h2>❌ Không thể lấy dữ liệu người dùng.</h2>
+        
         <p>Vui lòng mở ứng dụng này thông qua Telegram bằng cách bấm vào link:</p>
         <a href="https://t.me/test20214bot/my_app" target="_blank" rel="noopener noreferrer">
           👉 Mở lại Mini App trong Telegram
