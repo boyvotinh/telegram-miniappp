@@ -21,35 +21,41 @@ function App() {
   useEffect(() => {
     if (window.Telegram?.WebApp) {
       window.Telegram.WebApp.ready();
-    }
   
-    async function fetchUserInfo() {
-      try {
-        const telegram_id = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
-        console.log(telegram_id)
-        if (!telegram_id) {
-          console.error("Không thể lấy telegram_id từ Telegram WebApp");
-          setLoading(false);
-          return;
-        }
+      const user = window.Telegram.WebApp.initDataUnsafe?.user;
+      console.log("User từ Telegram:", user);
   
-        const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegram_id}`);
-        const userData = response.data;
-        setUser(userData);
-  
-        const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`);
-        setGroups(groupsResponse.data);
-  
-        const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`);
-        setTasks(taskResponse.data);
-      } catch (error) {
-        console.error('Lỗi khi lấy thông tin người dùng:', error);
-      } finally {
+      if (!user) {
+        console.error("⚡ WebApp initDataUnsafe không có user. Có thể do không mở từ Telegram hoặc chưa gửi user data.");
         setLoading(false);
+        return;
       }
-    }
   
-    fetchUserInfo();
+      async function fetchUserInfo() {
+        try {
+          const telegram_id = user.id;
+          
+          const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegram_id}`);
+          const userData = response.data;
+          setUser(userData);
+  
+          const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`);
+          setGroups(groupsResponse.data);
+  
+          const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`);
+          setTasks(taskResponse.data);
+        } catch (error) {
+          console.error('Lỗi khi lấy thông tin người dùng:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+  
+      fetchUserInfo();
+    } else {
+      console.error("⚡ Không có window.Telegram.WebApp");
+      setLoading(false);
+    }
   }, []);
   if (!user && !loading) {
     return (
