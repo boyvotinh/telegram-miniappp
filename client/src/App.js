@@ -21,21 +21,37 @@ function App() {
   useEffect(() => {
     if (window.Telegram?.WebApp) {
       window.Telegram.WebApp.ready();
-
-      const user = window.Telegram.WebApp.initDataUnsafe?.user;
-      console.log("User từ Telegram:", user);
-
-      if (!user) {
-        alert("⚡ WebApp initDataUnsafe không có user. Có thể do không mở từ Telegram hoặc chưa gửi user data.");
+    
+      const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+    
+      if (initDataUnsafe) {
+        const telegramUser = initDataUnsafe.user;
+    
+        if (telegramUser) {
+          console.log('User data:', telegramUser);
+          setUser(telegramUser);  // Set user data directly
+        } else {
+          console.error('Không thể lấy dữ liệu người dùng.');
+          alert('Không thể lấy dữ liệu người dùng.');
+          setLoading(false);
+        }
+      } else {
+        console.error('initDataUnsafe is not available.');
+        alert('Không thể lấy dữ liệu từ WebApp.');
         setLoading(false);
-        return;
       }
+    } else {
+      console.error('Telegram WebApp is not available.');
+      alert('Ứng dụng Telegram không được tải đúng cách.');
+      setLoading(false);
+    }
+  }, []);
 
-      async function fetchUserInfo() {
+  useEffect(() => {
+    if (user) {
+      const fetchUserInfo = async () => {
         try {
-          const telegram_id = user.id;
-          
-          const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegram_id}`);
+          const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${user.id}`);
           const userData = response.data;
           setUser(userData);
 
@@ -49,30 +65,21 @@ function App() {
         } finally {
           setLoading(false);
         }
-      }
+      };
 
       fetchUserInfo();
     }
-    else {
-      console.error("⚡ Không có window.Telegram.WebApp");
-      setLoading(false);
-    }
-  }, []);
+  }, [user]);
 
   if (loading) {
     return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
   }
   
   if (!user) {
-    const telegram_id = window.Telegram.WebApp.initDataUnsafe?.user?.id;  // Or get telegram_id from the appropriate source
-
-    if (telegram_id) {
-      alert(telegram_id);
-    }
+    alert("⚡ WebApp initDataUnsafe không có user. Có thể do không mở từ Telegram hoặc chưa gửi user data.");
     return (
       <div style={{ textAlign: 'center', marginTop: 100 }}>
         <h2>❌ Không thể lấy dữ liệu người dùng.</h2>
-        
         <p>Vui lòng mở ứng dụng này thông qua Telegram bằng cách bấm vào link:</p>
         <a href="https://t.me/test20214bot/my_app" target="_blank" rel="noopener noreferrer">
           👉 Mở lại Mini App trong Telegram
