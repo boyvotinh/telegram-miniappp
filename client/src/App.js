@@ -41,29 +41,38 @@ function App() {
   }, []);  
   useEffect(() => {
     if (telegramUser) {
-      const fetchUserInfo = async () => {
+      const verifyAndFetchUserInfo = async () => {
         try {
-          const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegramUser.id}`);
-          const userData = response.data;
-          setUser(userData);
+          const initData = window.Telegram?.WebApp?.initData;
   
-          const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`);
+          if (!initData) {
+            throw new Error('initData không tồn tại');
+          }
+  
+          // 1. Gửi initData lên server để xác minh
+          const verifyResponse = await axios.post('https://telegram-miniappp.onrender.com/api/auth/verify-initdata', { initData });
+          
+          const verifiedUser = verifyResponse.data.user;
+          setUser(verifiedUser);
+  
+          // 2. Sau khi xác minh xong, lấy Group và Task
+          const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${verifiedUser.id}`);
           setGroups(groupsResponse.data);
   
-          const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`);
+          const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${verifiedUser.id}`);
           setTasks(taskResponse.data);
+  
         } catch (error) {
-          console.error('Lỗi khi lấy thông tin người dùng:', error);
+          console.error('Lỗi xác minh initData hoặc lấy dữ liệu người dùng:', error);
+          alert('Xác minh người dùng thất bại, vui lòng mở lại Mini App từ Telegram.');
         } finally {
           setLoading(false);
         }
       };
   
-      fetchUserInfo();
+      verifyAndFetchUserInfo();
     }
   }, [telegramUser]);
-  
-
   if (loading) {
     return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
   }
