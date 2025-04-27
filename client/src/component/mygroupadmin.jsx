@@ -114,7 +114,7 @@ const handleAssignTask = async () => {
       team_id: selectedGroup.id,  // Gán nhóm vào nhiệm vụ
       deadline: formattedDeadline,  // Đảm bảo deadline được gửi đúng định dạng
     });
-    console.log('Nhiệm vụ được giao:', response.data);
+    // console.log('Nhiệm vụ được giao:', response.data);
 
     // Hiển thị thông báo thành công và đóng modal
     antdMessage.success('Giao nhiệm vụ thành công!');

@@ -18,7 +18,7 @@ function MyGroupsAsUser({ user, groups }) {
 
     try {
       const response = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${user.id}`);
-      console.log('Dữ liệu nhiệm vụ:', response.data);
+      // console.log('Dữ liệu nhiệm vụ:', response.data);
       setTasks(response.data);
     } catch (error) {
       console.error('Lỗi khi lấy nhiệm vụ:', error);
