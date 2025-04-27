@@ -74,18 +74,18 @@ function App() {
   if (loading) {
     return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
   }
-  
-  if (!user) {
-    return (
-      <div style={{ textAlign: 'center', marginTop: 100 }}>
-        <h2>❌ Không thể lấy dữ liệu người dùng.</h2>
-        <p>Vui lòng mở ứng dụng này thông qua Telegram bằng cách bấm vào link:</p>
-        <a href="https://t.me/test20214bot/my_app" target="_blank" rel="noopener noreferrer">
-          👉 Mở lại Mini App trong Telegram
-        </a>
-      </div>
-    );
-  }
+  // nếu chạy test sửa fontend thì // đống này đi
+  // if (!user) {
+  //   return (
+  //     <div style={{ textAlign: 'center', marginTop: 100 }}>
+  //       <h2>❌ Không thể lấy dữ liệu người dùng.</h2>
+  //       <p>Vui lòng mở ứng dụng này thông qua Telegram bằng cách bấm vào link:</p>
+  //       <a href="https://t.me/test20214bot/my_app" target="_blank" rel="noopener noreferrer">
+  //         👉 Mở lại Mini App trong Telegram
+  //       </a>
+  //     </div>
+  //   );
+  // }
   
 
   const createdGroups = groups.filter(group => group.role === 'admin');
