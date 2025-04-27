@@ -100,10 +100,14 @@ function App() {
           onClose={toggleDrawer}
           open={drawerVisible}
           width={250}
+          bodyStyle={{ padding: '20px' }} // Tăng khoảng cách cho phần nội dung
         >
           {/* Hiển thị tên người dùng và Telegram ID */}
-          <div style={{ color: '#ffffff', marginBottom: '20px', padding: '10px' }}>
-            <span>Telegram ID: {telegramUser?.id}</span>
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div style={{ marginTop: '10px', color: '#ffffff' }}>
+              <span style={{ fontWeight: 'bold' }}>{telegramUser?.first_name} {telegramUser?.last_name}</span>
+            </div>
+            <div style={{ color: '#cccccc' }}>Telegram ID: {telegramUser?.id}</div>
           </div>
 
           <Menu
@@ -112,17 +116,45 @@ function App() {
             selectedKeys={[selectedMenuKey]}
             onClick={handleMenuClick}
             style={{
-              backgroundColor: '#001529',  // Thay đổi màu nền của menu
+              backgroundColor: '#001529',  // Màu nền menu
               color: '#ffffff',            // Màu chữ
+              borderRadius: '8px',         // Góc bo tròn cho menu
             }}
           >
-            <Menu.Item key="1" icon={<HomeOutlined />}>
+            <Menu.Item
+              key="1"
+              icon={<HomeOutlined />}
+              style={{
+                marginBottom: '10px',      // Tạo khoảng cách giữa các mục
+                padding: '12px',           // Thêm padding cho mục
+                borderRadius: '5px',       // Góc bo tròn cho các mục
+                transition: 'background-color 0.3s', // Hiệu ứng chuyển màu nền khi hover
+              }}
+            >
               <Link to="/my-tasks">My Tasks</Link>
             </Menu.Item>
-            <Menu.Item key="2" icon={<GroupOutlined />}>
+            
+            <Menu.Item
+              key="2"
+              icon={<GroupOutlined />}
+              style={{
+                marginBottom: '10px',
+                padding: '12px',
+                borderRadius: '5px',
+              }}
+            >
               <Link to="/my-group">My Groups</Link>
             </Menu.Item>
-            <Menu.Item key="3" icon={<TeamOutlined />}>
+
+            <Menu.Item
+              key="3"
+              icon={<TeamOutlined />}
+              style={{
+                marginBottom: '10px',
+                padding: '12px',
+                borderRadius: '5px',
+              }}
+            >
               <Link to="/admin/my-groups">My Created Groups</Link>
             </Menu.Item>
           </Menu>
