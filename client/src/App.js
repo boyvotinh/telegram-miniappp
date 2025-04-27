@@ -99,7 +99,6 @@ function App() {
           onClose={toggleDrawer}
           open={drawerVisible}
           width={250}
-          bodyStyle={{ padding: '20px' }} // Tăng khoảng cách cho phần nội dung
         >
           {/* Hiển thị tên người dùng và Telegram ID */}
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
