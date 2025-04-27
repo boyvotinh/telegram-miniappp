@@ -104,8 +104,7 @@ function App() {
         >
           {/* Hiển thị tên người dùng và Telegram ID */}
           <div style={{ color: '#ffffff', marginBottom: '20px', padding: '10px' }}>
-            <span>{user.name}</span> <br />
-            <span>Telegram ID: {user.telegram_id}</span>
+            <span>Telegram ID: {telegramUser.id}</span>
           </div>
 
           <Menu
