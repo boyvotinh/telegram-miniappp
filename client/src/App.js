@@ -8,6 +8,7 @@ import MyGroups from './component/mygropeusers'; // component cho người dùng
 import MyTasks from './component/mytask';
 
 const { Header, Content, Footer } = Layout;
+
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -102,19 +103,14 @@ function App() {
         >
           {/* Hiển thị tên người dùng và Telegram ID */}
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <div style={{ marginTop: '10px', color: '#ffffff' }}>
-              <span style={{ fontWeight: 'black' }}>{telegramUser?.first_name} {telegramUser?.last_name}</span>
+            <div style={{ marginTop: '10px', color: 'black' }}>
+              <span style={{ fontWeight: 'bold' }}>{telegramUser?.first_name} {telegramUser?.last_name}</span>
             </div>
             <div style={{ color: 'black' }}>Telegram ID: {telegramUser?.id}</div>
           </div>
           <Menu
             selectedKeys={[selectedMenuKey]}
             onClick={handleMenuClick}
-            style={{
-              backgroundColor: '#001529',  // Màu nền menu
-              color: '#ffffff',            // Màu chữ
-              borderRadius: '8px',         // Góc bo tròn cho menu
-            }}
           >
             <Menu.Item
               key="1"
