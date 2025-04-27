@@ -26,7 +26,7 @@ function App() {
       const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
   
       if (initData && initDataUnsafe?.user) {
-        console.log('Telegram User:', initDataUnsafe.user);
+        // console.log('Telegram User:', initDataUnsafe.user);
         setTelegramUser(initDataUnsafe.user);
       } else {
         setLoading(false);
@@ -103,7 +103,7 @@ function App() {
         >
           {/* Hiển thị tên người dùng và Telegram ID */}
           <div style={{ color: '#ffffff', marginBottom: '20px', padding: '10px' }}>
-            <span>Telegram ID: {telegramUser.id}</span>
+            <span>Telegram ID: {initDataUnsafe.user.id}</span>
           </div>
 
           <Menu
