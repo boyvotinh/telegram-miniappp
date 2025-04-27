@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
-import { Layout, Menu, Spin, Typography, Drawer, Button } from 'antd';
+import { Layout, Menu, Spin, Drawer, Button } from 'antd';
 import { HomeOutlined, GroupOutlined, TeamOutlined, MenuOutlined } from '@ant-design/icons';
 import MyGroupsAsAdmin from './component/mygroupadmin'; // component cho người tạo nhóm
 import MyGroups from './component/mygropeusers'; // component cho người dùng
 import MyTasks from './component/mytask';
 
 const { Header, Content, Footer } = Layout;
-const { Title } = Typography;
-
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -105,14 +103,11 @@ function App() {
           {/* Hiển thị tên người dùng và Telegram ID */}
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
             <div style={{ marginTop: '10px', color: '#ffffff' }}>
-              <span style={{ fontWeight: 'bold' }}>{telegramUser?.first_name} {telegramUser?.last_name}</span>
+              <span style={{ fontWeight: 'black' }}>{telegramUser?.first_name} {telegramUser?.last_name}</span>
             </div>
-            <div style={{ color: '#cccccc' }}>Telegram ID: {telegramUser?.id}</div>
+            <div style={{ color: 'black' }}>Telegram ID: {telegramUser?.id}</div>
           </div>
-
           <Menu
-            theme="dark"
-            mode="inline"
             selectedKeys={[selectedMenuKey]}
             onClick={handleMenuClick}
             style={{
