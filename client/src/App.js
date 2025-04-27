@@ -102,6 +102,12 @@ function App() {
           open={drawerVisible}
           width={250}
         >
+          {/* Hiển thị tên người dùng và Telegram ID */}
+          <div style={{ color: '#ffffff', marginBottom: '20px', padding: '10px' }}>
+            <span>{user.name}</span> <br />
+            <span>Telegram ID: {user.telegram_id}</span>
+          </div>
+
           <Menu
             theme="dark"
             mode="inline"
