@@ -22,12 +22,13 @@ function App() {
   useEffect(() => {
     if (window.Telegram?.WebApp) {
       window.Telegram.WebApp.ready();
-  
+      alert('Ứng dụng Telegram được tải đúng cách.');
       const initData = window.Telegram.WebApp.initData;
       const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
   
       if (initData && initDataUnsafe?.user) {
         console.log('User từ Telegram:', initDataUnsafe.user);
+        alert('Ứng dụng Telegram lấy đc thông tin user.');
         setTelegramUser(initDataUnsafe.user);
       } else {
         alert('Không thể lấy dữ liệu người dùng từ Telegram.');
@@ -41,38 +42,28 @@ function App() {
   }, []);  
   useEffect(() => {
     if (telegramUser) {
-      const verifyAndFetchUserInfo = async () => {
+      const fetchUserInfo = async () => {
         try {
-          const initData = window.Telegram?.WebApp?.initData;
+          const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegramUser.id}`);
+          const userData = response.data;
+          setUser(userData);
   
-          if (!initData) {
-            throw new Error('initData không tồn tại');
-          }
-  
-          // 1. Gửi initData lên server để xác minh
-          const verifyResponse = await axios.post('https://telegram-miniappp.onrender.com/api/auth/verify-initdata', { initData });
-          
-          const verifiedUser = verifyResponse.data.user;
-          setUser(verifiedUser);
-  
-          // 2. Sau khi xác minh xong, lấy Group và Task
-          const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${verifiedUser.id}`);
+          const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`);
           setGroups(groupsResponse.data);
   
-          const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${verifiedUser.id}`);
+          const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`);
           setTasks(taskResponse.data);
-  
         } catch (error) {
-          console.error('Lỗi xác minh initData hoặc lấy dữ liệu người dùng:', error);
-          alert('Xác minh người dùng thất bại, vui lòng mở lại Mini App từ Telegram.');
+          console.error('Lỗi khi lấy thông tin người dùng:', error);
         } finally {
           setLoading(false);
         }
       };
   
-      verifyAndFetchUserInfo();
+      fetchUserInfo();
     }
   }, [telegramUser]);
+
   if (loading) {
     return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
   }

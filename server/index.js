@@ -5,7 +5,6 @@ const taskRoutes = require('./routes/tasks');
 const usersRouter = require('./routes/users');
 const teamRoutes = require('./routes/teams');
 const submissionRoutes = require('./routes/submissions');
-const telegramRoutes = require('./routes/telegram')
 const cors = require('cors')
 const app = express();
 
@@ -16,7 +15,6 @@ app.use('/api/users', usersRouter);
 app.use('/api/teams', teamRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/submissions', submissionRoutes);
-app.use('/api/auth', telegramRoutes);
 app.use('/uploads', express.static('uploads'));
 console.log("Teams routes mounted");
 const port = 29651
