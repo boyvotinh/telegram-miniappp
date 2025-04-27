@@ -26,43 +26,51 @@ function App() {
   
       if (initData && initDataUnsafe?.user) {
         console.log('Telegram User:', initDataUnsafe.user);
-        setTelegramUser(initDataUnsafe.user);
+        setTelegramUser(initDataUnsafe.user);  // Cập nhật thông tin người dùng từ Telegram WebApp
       } else {
-        setLoading(false);
+        setTelegramUser({
+          id: '1234567891',  // ID mặc định
+          first_name: 'test', // Tên mặc định
+          last_name: 'User',  // Họ tên mặc định
+        });
       }
+      setLoading(false);  // Dừng loading khi đã có thông tin
     } else {
+      // Nếu không mở qua Telegram WebApp, sử dụng thông tin mặc định
       setTelegramUser({
-        id: '1234567891',
+        id: '1234567891',  // ID mặc định
         first_name: 'test',
         last_name: 'User',
       });
-      setLoading(false);  // Khi đã có dữ liệu, không cần loading nữa
+      setLoading(false);  // Dừng loading
     }
   }, []);
+  
   useEffect(() => {
     if (telegramUser) {
       const fetchUserInfo = async () => {
         try {
+          console.log('Fetching user info for', telegramUser.id);
           const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegramUser.id}`);
           const userData = response.data;
-          setUser(userData);
+          setUser(userData);  // Cập nhật dữ liệu người dùng
   
           const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`);
-          setGroups(groupsResponse.data);
+          setGroups(groupsResponse.data);  // Lưu thông tin nhóm
   
           const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`);
-          setTasks(taskResponse.data);
+          setTasks(taskResponse.data);  // Lưu thông tin nhiệm vụ
         } catch (error) {
           console.error('Lỗi khi lấy thông tin người dùng:', error);
         } finally {
-          setLoading(false);
+          setLoading(false);  // Kết thúc loading khi dữ liệu đã được tải
         }
       };
   
       fetchUserInfo();
     }
-  }, [telegramUser]);
-
+  }, [telegramUser]);  // Mỗi khi telegramUser thay đổi, gọi lại useEffect
+  
   if (loading) {
     return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
   }
@@ -78,6 +86,7 @@ function App() {
       </div>
     );
   }
+  
 
   const createdGroups = groups.filter(group => group.role === 'admin');
   const memberGroups = groups.filter(group => group.role !== 'admin');
