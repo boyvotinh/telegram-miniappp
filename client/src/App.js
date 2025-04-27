@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
-import { Layout, Menu, Spin, Typography, Drawer, Button, message } from 'antd';
+import { Layout, Menu, Spin, Typography, Drawer, Button } from 'antd';
 import { HomeOutlined, GroupOutlined, TeamOutlined, MenuOutlined } from '@ant-design/icons';
-import MyGroupsAsAdmin from './component/mygroupadmin';
-import MyGroups from './component/mygropeusers';
+import MyGroupsAsAdmin from './component/mygroupadmin'; // component cho người tạo nhóm
+import MyGroups from './component/mygropeusers'; // component cho người dùng
 import MyTasks from './component/mytask';
 
 const { Header, Content, Footer } = Layout;
@@ -13,136 +13,74 @@ const { Title } = Typography;
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [telegramUser, setTelegramUser] = useState(null);
+  const [telegramUser, setTelegramUser] = useState(null); 
   const [tasks, setTasks] = useState([]);
   const [groups, setGroups] = useState([]);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedMenuKey, setSelectedMenuKey] = useState('1');
-  const [isTelegramEnv, setIsTelegramEnv] = useState(false);
 
   useEffect(() => {
-    // Kiểm tra môi trường chạy
-    const checkTelegramEnv = () => {
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.ready();
-        setIsTelegramEnv(true);
-        console.log('Running in Telegram Mini App');
-        
-        const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
-        if (initDataUnsafe?.user) {
-          console.log('Telegram user:', initDataUnsafe.user);
-          setTelegramUser(initDataUnsafe.user);
-        } else {
-          console.warn('No Telegram user data found');
-          setLoading(false);
-        }
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.ready();
+      alert('Ứng dụng Telegram được tải đúng cách.');
+      const initData = window.Telegram.WebApp.initData;
+      const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+  
+      if (initData && initDataUnsafe?.user) {
+        console.log('User từ Telegram:', initDataUnsafe.user);
+        alert('Ứng dụng Telegram lấy đc thông tin user.');
+        setTelegramUser(initDataUnsafe.user);
       } else {
-        console.log('Running in normal web environment');
-        setIsTelegramEnv(false);
+        alert('Không thể lấy dữ liệu người dùng từ Telegram.');
         setLoading(false);
-        
-        // Kiểm tra nếu có user trong localStorage (cho web thường)
-        const savedUser = localStorage.getItem('webUser');
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
-        }
       }
-    };
-
-    checkTelegramEnv();
-  }, []);
-
+    } else {
+      console.warn('window.Telegram hoặc window.Telegram.WebApp không tồn tại');
+      alert('Ứng dụng Telegram không được tải đúng cách.');
+      setLoading(false);
+    }
+  }, []);  
   useEffect(() => {
     if (telegramUser) {
-      // Chạy trong Telegram - lấy thông tin từ Telegram
-      const fetchTelegramUserInfo = async () => {
+      const fetchUserInfo = async () => {
         try {
-          const response = await axios.get(
-            `https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegramUser.id}`
-          );
+          const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegramUser.id}`);
           const userData = response.data;
           setUser(userData);
-
-          const [groupsResponse, taskResponse] = await Promise.all([
-            axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`),
-            axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`)
-          ]);
-
+  
+          const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`);
           setGroups(groupsResponse.data);
+  
+          const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`);
           setTasks(taskResponse.data);
         } catch (error) {
-          console.error('Error fetching Telegram user info:', error);
-          message.error('Failed to load Telegram user data');
+          console.error('Lỗi khi lấy thông tin người dùng:', error);
         } finally {
           setLoading(false);
         }
       };
-
-      fetchTelegramUserInfo();
-    } else if (!isTelegramEnv && !user) {
-      // Xử lý cho web thường (không phải Telegram)
-      // Có thể thêm logic đăng nhập thông thường ở đây
-      console.log('Normal web environment - no Telegram user');
+  
+      fetchUserInfo();
     }
-  }, [telegramUser, isTelegramEnv]);
-
-  const handleWebLogin = (credentials) => {
-    // Hàm này xử lý đăng nhập cho web thường
-    // Ví dụ:
-    axios.post('/api/web-login', credentials)
-      .then(response => {
-        const userData = response.data;
-        setUser(userData);
-        localStorage.setItem('webUser', JSON.stringify(userData));
-      })
-      .catch(error => {
-        console.error('Login error:', error);
-        message.error('Login failed');
-      });
-  };
+  }, [telegramUser]);
 
   if (loading) {
     return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
   }
-
+  
   if (!user) {
-    if (isTelegramEnv) {
-      return (
-        <div style={{ textAlign: 'center', marginTop: 100 }}>
-          <h2>❌ Không thể lấy dữ liệu người dùng từ Telegram.</h2>
-          <p>Vui lòng mở ứng dụng này thông qua Telegram bằng cách bấm vào link:</p>
-          <a href="https://t.me/test20214bot/my_app" target="_blank" rel="noopener noreferrer">
-            👉 Mở lại Mini App trong Telegram
-          </a>
-        </div>
-      );
-    } else {
-      // Hiển thị form đăng nhập cho web thường
-      return (
-        <div style={{ textAlign: 'center', marginTop: 100 }}>
-          <h2>Welcome to Task Manager</h2>
-          {/* Thêm form đăng nhập ở đây */}
-          <div style={{ maxWidth: 300, margin: '0 auto' }}>
-            <input placeholder="Email" style={{ marginBottom: 10, padding: 8, width: '100%' }} />
-            <input 
-              placeholder="Password" 
-              type="password" 
-              style={{ marginBottom: 10, padding: 8, width: '100%' }} 
-            />
-            <Button 
-              type="primary" 
-              onClick={() => handleWebLogin({ email: 'test@example.com', password: '123' })}
-              style={{ width: '100%' }}
-            >
-              Login
-            </Button>
-          </div>
-        </div>
-      );
-    }
+    alert("⚡ WebApp initDataUnsafe không có user. Có thể do không mở từ Telegram hoặc chưa gửi user data.");
+    return (
+      <div style={{ textAlign: 'center', marginTop: 100 }}>
+        <h2>❌ Không thể lấy dữ liệu người dùng.</h2>
+        <p>Vui lòng mở ứng dụng này thông qua Telegram bằng cách bấm vào link:</p>
+        <a href="https://t.me/test20214bot/my_app" target="_blank" rel="noopener noreferrer">
+          👉 Mở lại Mini App trong Telegram
+        </a>
+      </div>
+    );
   }
 
-  // Phần còn lại giữ nguyên
   const createdGroups = groups.filter(group => group.role === 'admin');
   const memberGroups = groups.filter(group => group.role !== 'admin');
 
@@ -160,8 +98,64 @@ function App() {
   return (
     <Router>
       <Layout style={{ minHeight: '100vh' }}>
-        {/* Drawer và các phần khác giữ nguyên */}
-        {/* ... */}
+        {/* Drawer (sidebar) */}
+        <Drawer
+          title="Menu"
+          placement="left"
+          closable={false}
+          onClose={toggleDrawer}
+          open={drawerVisible}
+          width={250}
+        >
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[selectedMenuKey]}
+            onClick={handleMenuClick}
+            style={{
+              backgroundColor: '#001529',  // Thay đổi màu nền của menu
+              color: '#ffffff',            // Màu chữ
+            }}
+          >
+            <Menu.Item key="1" icon={<HomeOutlined />}>
+              <Link to="/my-tasks">My Tasks</Link>
+            </Menu.Item>
+            <Menu.Item key="2" icon={<GroupOutlined />}>
+              <Link to="/my-group">My Groups</Link>
+            </Menu.Item>
+            <Menu.Item key="3" icon={<TeamOutlined />}>
+              <Link to="/admin/my-groups">My Created Groups</Link>
+            </Menu.Item>
+          </Menu>
+        </Drawer>
+
+        <Header style={{ background: '#001529', padding: 0 }}>
+          <Button
+            className="menu-trigger"
+            type="primary"
+            onClick={toggleDrawer}
+            icon={<MenuOutlined />}
+            style={{ position: 'absolute', left: 0, top: 16 }}
+          />
+        </Header>
+
+        <Content style={{ padding: '0 50px', marginTop: '20px' }}>
+          <div className="site-layout-content">
+            <Title level={2} style={{ textAlign: 'center' }}>
+              Hello, {user.first_name} {user.last_name}
+            </Title>
+
+            <Routes>
+              <Route path="/" element={<Navigate to="/my-tasks" replace />} />
+              <Route path="/my-tasks" element={<MyTasks tasks={tasks} />} />
+              <Route path="/my-group" element={<MyGroups user={user} groups={memberGroups} />} />
+              <Route path="/admin/my-groups" element={<MyGroupsAsAdmin user={user} groups={createdGroups} />} />
+              <Route path="*" element={<h2>Page not found</h2>} />
+            </Routes>
+          </div>
+        </Content>
+
+        <Footer style={{ textAlign: 'center' }}>Ant Design ©2025 Created by YourName</Footer>
       </Layout>
     </Router>
   );
