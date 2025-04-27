@@ -31,7 +31,12 @@ function App() {
         setLoading(false);
       }
     } else {
-      setLoading(false);
+      setTelegramUser({
+        id: '1234567891',
+        first_name: 'test',
+        last_name: 'User',
+      });
+      setLoading(false);  // Khi đã có dữ liệu, không cần loading nữa
     }
   }, []);
   useEffect(() => {
