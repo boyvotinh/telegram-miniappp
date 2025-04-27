@@ -20,24 +20,24 @@ function App() {
   const [selectedMenuKey, setSelectedMenuKey] = useState('1');
 
   useEffect(() => {
-    if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.ready();
+    if (!window.Telegram?.WebApp) {
+  //     window.Telegram.WebApp.ready();
       alert('Ứng dụng Telegram được tải đúng cách.');
-      const initData = window.Telegram.WebApp.initData;
-      const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+  //     const initData = window.Telegram.WebApp.initData;
+  //     const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
   
-      if (initData && initDataUnsafe?.user) {
-        console.log('User từ Telegram:', initDataUnsafe.user);
-        alert('Ứng dụng Telegram lấy đc thông tin user.');
-        setTelegramUser(initDataUnsafe.user);
-      } else {
-        alert('Không thể lấy dữ liệu người dùng từ Telegram.');
-        setLoading(false);
-      }
-    } else {
-      console.warn('window.Telegram hoặc window.Telegram.WebApp không tồn tại');
-      alert('Ứng dụng Telegram không được tải đúng cách.');
-      setLoading(false);
+  //     if (initData && initDataUnsafe?.user) {
+  //       console.log('User từ Telegram:', initDataUnsafe.user);
+  //       alert('Ứng dụng Telegram lấy đc thông tin user.');
+  //       setTelegramUser(initDataUnsafe.user);
+  //     } else {
+  //       alert('Không thể lấy dữ liệu người dùng từ Telegram.');
+  //       setLoading(false);
+  //     }
+  //   } else {
+  //     console.warn('window.Telegram hoặc window.Telegram.WebApp không tồn tại');
+  //     alert('Ứng dụng Telegram không được tải đúng cách.');
+  //     setLoading(false);
     }
   }, []);  
   useEffect(() => {
