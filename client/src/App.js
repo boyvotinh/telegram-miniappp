@@ -34,6 +34,7 @@ function App() {
         setLoading(false);
       }
     } else {
+      console.warn('window.Telegram hoặc window.Telegram.WebApp không tồn tại');
       alert('Ứng dụng Telegram không được tải đúng cách.');
       setLoading(false);
     }
