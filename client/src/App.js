@@ -26,16 +26,15 @@ function App() {
       const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
   
       if (initData && initDataUnsafe?.user) {
-        // console.log('User từ Telegram:', initDataUnsafe.user);
+        console.log('Telegram User:', initDataUnsafe.user);
         setTelegramUser(initDataUnsafe.user);
       } else {
         setLoading(false);
       }
     } else {
-      // console.warn('window.Telegram hoặc window.Telegram.WebApp không tồn tại');
       setLoading(false);
     }
-  }, []);  
+  }, []);
   useEffect(() => {
     if (telegramUser) {
       const fetchUserInfo = async () => {
