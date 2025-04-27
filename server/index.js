@@ -5,6 +5,7 @@ const taskRoutes = require('./routes/tasks');
 const usersRouter = require('./routes/users');
 const teamRoutes = require('./routes/teams');
 const submissionRoutes = require('./routes/submissions');
+const telegramRoutes = require('./routes/telegram')
 const cors = require('cors')
 const app = express();
 
