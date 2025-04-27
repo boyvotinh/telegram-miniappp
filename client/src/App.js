@@ -172,10 +172,6 @@ function App() {
 
         <Content style={{ padding: '0 50px', marginTop: '20px' }}>
           <div className="site-layout-content">
-            <Title level={2} style={{ textAlign: 'center' }}>
-              Hello, {user.first_name} {user.last_name}
-            </Title>
-
             <Routes>
               <Route path="/" element={<Navigate to="/my-tasks" replace />} />
               <Route path="/my-tasks" element={<MyTasks tasks={tasks} />} />
