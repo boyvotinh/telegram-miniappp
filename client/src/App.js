@@ -25,7 +25,7 @@ function App() {
       const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
   
       if (initData && initDataUnsafe?.user) {
-        console.log('Telegram User:', initDataUnsafe.user);
+        // console.log('Telegram User:', initDataUnsafe.user);
         setTelegramUser(initDataUnsafe.user);  // Cập nhật thông tin người dùng từ Telegram WebApp
       } else {
         setTelegramUser({
@@ -50,7 +50,7 @@ function App() {
     if (telegramUser) {
       const fetchUserInfo = async () => {
         try {
-          console.log('Fetching user info for', telegramUser.id);
+          // console.log('Fetching user info for', telegramUser.id);
           const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegramUser.id}`);
           const userData = response.data;
           setUser(userData);  // Cập nhật dữ liệu người dùng
@@ -186,7 +186,7 @@ function App() {
           </div>
         </Content>
 
-        <Footer style={{ textAlign: 'center' }}>Ant Design ©2025 Created by YourName</Footer>
+        <Footer style={{ textAlign: 'center' }}>Ant Design ©2025</Footer>
       </Layout>
     </Router>
   );
