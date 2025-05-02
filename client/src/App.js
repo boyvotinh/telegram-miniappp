@@ -107,75 +107,88 @@ function App() {
       <Layout style={{ minHeight: '100vh' }}>
         {/* Drawer (sidebar) */}
         <Drawer
-          title="Menu"
+          title={<span style={{ fontWeight: 'bold', fontSize: 18 }}>📋 Menu</span>}
           placement="left"
-          closable={false}
+          closable={true}
           onClose={toggleDrawer}
           open={drawerVisible}
-          width={250}
+          width={260}
+          bodyStyle={{ padding: '0 16px' }}
         >
-          {/* Hiển thị tên người dùng và Telegram ID */}
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <div style={{ marginTop: '10px', color: 'black' }}>
-              <span style={{ fontWeight: 'bold' }}>{telegramUser?.first_name} {telegramUser?.last_name}</span>
+          {/* Thông tin người dùng */}
+          <div style={{ textAlign: 'center', margin: '16px 0', padding: 12, background: '#f0f2f5', borderRadius: 8 }}>
+            <div style={{ fontWeight: 'bold', fontSize: 16 }}>
+              {telegramUser?.first_name} {telegramUser?.last_name}
             </div>
-            <div style={{ color: 'black' }}>Telegram ID: {telegramUser?.id}</div>
+            <div style={{ fontSize: 13, color: '#555' }}>ID: {telegramUser?.id}</div>
           </div>
+  
           <Menu
+            theme="light"
             selectedKeys={[selectedMenuKey]}
             onClick={handleMenuClick}
+            style={{ border: 'none' }}
           >
             <Menu.Item
               key="1"
               icon={<HomeOutlined />}
               style={{
-                marginBottom: '10px',      // Tạo khoảng cách giữa các mục
-                padding: '12px',           // Thêm padding cho mục
-                borderRadius: '5px',       // Góc bo tròn cho các mục
-                transition: 'background-color 0.3s', // Hiệu ứng chuyển màu nền khi hover
+                marginBottom: '8px',
+                padding: '12px',
+                borderRadius: '6px',
               }}
             >
-              <Link to="/my-tasks">My Tasks</Link>
+              <Link to="/my-tasks">📝 My Tasks</Link>
             </Menu.Item>
-            
+  
             <Menu.Item
               key="2"
               icon={<GroupOutlined />}
               style={{
-                marginBottom: '10px',
+                marginBottom: '8px',
                 padding: '12px',
-                borderRadius: '5px',
+                borderRadius: '6px',
               }}
             >
-              <Link to="/my-group">My Groups</Link>
+              <Link to="/my-group">👥 My Groups</Link>
             </Menu.Item>
-
+  
             <Menu.Item
               key="3"
               icon={<TeamOutlined />}
               style={{
-                marginBottom: '10px',
+                marginBottom: '8px',
                 padding: '12px',
-                borderRadius: '5px',
+                borderRadius: '6px',
               }}
             >
-              <Link to="/admin/my-groups">My Created Groups</Link>
+              <Link to="/admin/my-groups">🛠 My Created Groups</Link>
             </Menu.Item>
           </Menu>
         </Drawer>
-
-        <Header style={{ background: '#001529', padding: 0 }}>
+  
+        {/* Header */}
+        <Header style={{
+          background: '#001529',
+          padding: '0 16px',
+          display: 'flex',
+          alignItems: 'center',
+          height: 64
+        }}>
           <Button
-            className="menu-trigger"
             type="primary"
-            onClick={toggleDrawer}
             icon={<MenuOutlined />}
-            style={{ position: 'absolute', left: 0, top: 16 }}
+            onClick={toggleDrawer}
+            style={{ marginRight: 16 }}
           />
+          <div style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>
+            Telegram MiniApp
+          </div>
         </Header>
-
-        <Content style={{ padding: '0 50px', marginTop: '20px' }}>
-          <div className="site-layout-content">
+  
+        {/* Nội dung */}
+        <Content style={{ padding: '24px 16px', background: '#f0f2f5' }}>
+          <div style={{ background: '#fff', padding: 24, borderRadius: 8, minHeight: 360 }}>
             <Routes>
               <Route path="/" element={<Navigate to="/my-tasks" replace />} />
               <Route path="/my-tasks" element={<MyTasks tasks={tasks} />} />
@@ -185,8 +198,11 @@ function App() {
             </Routes>
           </div>
         </Content>
-
-        <Footer style={{ textAlign: 'center' }}>Ant Design ©2025</Footer>
+  
+        {/* Footer */}
+        <Footer style={{ textAlign: 'center', background: '#001529', color: '#fff' }}>
+         Ant Design ©2025
+        </Footer>
       </Layout>
     </Router>
   );
