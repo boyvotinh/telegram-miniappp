@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
-import { Layout, Menu, Spin, Drawer, Button } from 'antd';
-import { HomeOutlined, GroupOutlined, TeamOutlined, MenuOutlined } from '@ant-design/icons';
+import { Layout, Menu, Spin, Drawer, Button, Avatar, Typography, theme } from 'antd';
+import { HomeOutlined, GroupOutlined, TeamOutlined, MenuOutlined, UserOutlined } from '@ant-design/icons';
 import MyGroupsAsAdmin from './component/mygroupadmin'; // component cho người tạo nhóm
 import MyGroups from './component/mygropeusers'; // component cho người dùng
 import MyTasks from './component/mytask';
 
 const { Header, Content, Footer } = Layout;
+const { Title, Text } = Typography;
 
 function App() {
   const [user, setUser] = useState(null);
@@ -17,6 +18,8 @@ function App() {
   const [groups, setGroups] = useState([]);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedMenuKey, setSelectedMenuKey] = useState('1');
+
+  const { token } = theme.useToken();
 
   useEffect(() => {
     if (window.Telegram?.WebApp) {
@@ -72,7 +75,17 @@ function App() {
   }, [telegramUser]);  // Mỗi khi telegramUser thay đổi, gọi lại useEffect
   
   if (loading) {
-    return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh',
+        background: token.colorBgContainer
+      }}>
+        <Spin size="large" />
+      </div>
+    );
   }
   // nếu chạy test sửa fontend thì // đống này đi
   // if (!user) {
@@ -105,90 +118,130 @@ function App() {
   return (
     <Router>
       <Layout style={{ minHeight: '100vh' }}>
-        {/* Drawer (sidebar) */}
         <Drawer
-          title={<span style={{ fontWeight: 'bold', fontSize: 18 }}>📋 Menu</span>}
+          title={
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px',
+              padding: '8px 0'
+            }}>
+              <Avatar 
+                size={40} 
+                icon={<UserOutlined />} 
+                style={{ 
+                  backgroundColor: token.colorPrimary,
+                  color: '#fff'
+                }} 
+              />
+              <div>
+                <Title level={5} style={{ margin: 0 }}>
+                  {telegramUser?.first_name} {telegramUser?.last_name}
+                </Title>
+                <Text type="secondary" style={{ fontSize: '12px' }}>
+                  ID: {telegramUser?.id}
+                </Text>
+              </div>
+            </div>
+          }
           placement="left"
           closable={true}
           onClose={toggleDrawer}
           open={drawerVisible}
-          width={260}
-          bodyStyle={{ padding: '0 16px' }}
+          width={280}
+          styles={{
+            body: {
+              padding: '16px'
+            },
+            header: {
+              borderBottom: `1px solid ${token.colorBorderSecondary}`,
+              padding: '16px'
+            }
+          }}
         >
-          {/* Thông tin người dùng */}
-          <div style={{ textAlign: 'center', margin: '16px 0', padding: 12, background: '#f0f2f5', borderRadius: 8 }}>
-            <div style={{ fontWeight: 'bold', fontSize: 16 }}>
-              {telegramUser?.first_name} {telegramUser?.last_name}
-            </div>
-            <div style={{ fontSize: 13, color: '#555' }}>ID: {telegramUser?.id}</div>
-          </div>
-  
           <Menu
             theme="light"
             selectedKeys={[selectedMenuKey]}
             onClick={handleMenuClick}
-            style={{ border: 'none' }}
-          >
-            <Menu.Item
-              key="1"
-              icon={<HomeOutlined />}
-              style={{
-                marginBottom: '8px',
-                padding: '12px',
-                borderRadius: '6px',
-              }}
-            >
-              <Link to="/my-tasks">📝 My Tasks</Link>
-            </Menu.Item>
-  
-            <Menu.Item
-              key="2"
-              icon={<GroupOutlined />}
-              style={{
-                marginBottom: '8px',
-                padding: '12px',
-                borderRadius: '6px',
-              }}
-            >
-              <Link to="/my-group">👥 My Groups</Link>
-            </Menu.Item>
-  
-            <Menu.Item
-              key="3"
-              icon={<TeamOutlined />}
-              style={{
-                marginBottom: '8px',
-                padding: '12px',
-                borderRadius: '6px',
-              }}
-            >
-              <Link to="/admin/my-groups">🛠 My Created Groups</Link>
-            </Menu.Item>
-          </Menu>
+            style={{ 
+              border: 'none',
+              borderRadius: token.borderRadiusLG
+            }}
+            items={[
+              {
+                key: '1',
+                icon: <HomeOutlined />,
+                label: <Link to="/my-tasks">My Tasks</Link>,
+                style: {
+                  marginBottom: '8px',
+                  borderRadius: token.borderRadiusLG,
+                  height: '48px',
+                  lineHeight: '48px'
+                }
+              },
+              {
+                key: '2',
+                icon: <GroupOutlined />,
+                label: <Link to="/my-group">My Groups</Link>,
+                style: {
+                  marginBottom: '8px',
+                  borderRadius: token.borderRadiusLG,
+                  height: '48px',
+                  lineHeight: '48px'
+                }
+              },
+              {
+                key: '3',
+                icon: <TeamOutlined />,
+                label: <Link to="/admin/my-groups">My Created Groups</Link>,
+                style: {
+                  marginBottom: '8px',
+                  borderRadius: token.borderRadiusLG,
+                  height: '48px',
+                  lineHeight: '48px'
+                }
+              }
+            ]}
+          />
         </Drawer>
-  
-        {/* Header */}
+
         <Header style={{
-          background: '#001529',
-          padding: '0 16px',
+          background: token.colorBgContainer,
+          padding: '0 24px',
           display: 'flex',
           alignItems: 'center',
-          height: 64
+          height: 64,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000
         }}>
           <Button
-            type="primary"
+            type="text"
             icon={<MenuOutlined />}
             onClick={toggleDrawer}
-            style={{ marginRight: 16 }}
+            style={{ 
+              marginRight: 16,
+              fontSize: '18px'
+            }}
           />
-          <div style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>
+          <Title level={4} style={{ margin: 0, color: token.colorTextHeading }}>
             Telegram MiniApp
-          </div>
+          </Title>
         </Header>
-  
-        {/* Nội dung */}
-        <Content style={{ padding: '24px 16px', background: '#f0f2f5' }}>
-          <div style={{ background: '#fff', padding: 24, borderRadius: 8, minHeight: 360 }}>
+
+        <Content style={{ 
+          padding: '24px',
+          background: token.colorBgLayout,
+          minHeight: 'calc(100vh - 64px - 70px)'
+        }}>
+          <div style={{ 
+            background: token.colorBgContainer,
+            padding: 24,
+            borderRadius: token.borderRadiusLG,
+            minHeight: 360,
+            boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+          }}>
             <Routes>
               <Route path="/" element={<Navigate to="/my-tasks" replace />} />
               <Route path="/my-tasks" element={<MyTasks tasks={tasks} />} />
@@ -198,10 +251,16 @@ function App() {
             </Routes>
           </div>
         </Content>
-  
-        {/* Footer */}
-        <Footer style={{ textAlign: 'center', background: '#001529', color: '#fff' }}>
-         Ant Design ©2025
+
+        <Footer style={{ 
+          textAlign: 'center',
+          background: token.colorBgContainer,
+          borderTop: `1px solid ${token.colorBorderSecondary}`,
+          padding: '16px 50px'
+        }}>
+          <Text type="secondary">
+            Telegram MiniApp ©{new Date().getFullYear()} Created with Ant Design
+          </Text>
         </Footer>
       </Layout>
     </Router>
