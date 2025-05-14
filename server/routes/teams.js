@@ -115,11 +115,16 @@ router.get('/by-user/:userId', (req, res) => {
 router.get('/by-member/:team_id/:user_id', (req, res) => {
   const { team_id, user_id } = req.params;
   const sql = `
-    SELECT * FROM tasks
-    WHERE team_id = ? AND assigned_to = ?
+    SELECT t.*, tm.role as user_role
+    FROM tasks t
+    JOIN team_members tm ON t.team_id = tm.team_id AND t.assigned_to = tm.user_id
+    WHERE t.team_id = ? AND t.assigned_to = ? AND tm.team_id = ?
   `;
-  db.query(sql, [team_id, user_id], (err, results) => {
-    if (err) return res.status(500).json({ error: 'Lỗi lấy nhiệm vụ' });
+  db.query(sql, [team_id, user_id, team_id], (err, results) => {
+    if (err) {
+      console.error('Lỗi khi lấy nhiệm vụ:', err);
+      return res.status(500).json({ error: 'Lỗi lấy nhiệm vụ' });
+    }
     res.status(200).json(results);
   });
 });
