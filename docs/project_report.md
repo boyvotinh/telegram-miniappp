@@ -48,64 +48,58 @@ Hệ thống được xây dựng theo mô hình client-server với các thành
 2. Frontend gửi request đến Backend API
 3. Backend xử lý request và tương tác với database
 4. Telegram Bot gửi thông báo đến người dùng
-5. Dữ liệu được cập nhật real-time trên giao diện
+5. Dữ liệu được cập nhật khi người dùng refresh trang
 
 ### 3. Công nghệ sử dụng
 
 #### 3.1. Frontend
 - React.js
-- Ant Design
-- Axios
-- React Router
-- WebSocket cho real-time updates
+- Ant Design cho UI components
+- Axios cho HTTP requests
+- React Router cho navigation
 
 #### 3.2. Backend
 - Node.js
 - Express.js
 - MySQL
-- JWT Authentication
 - Telegram Bot API
 
-#### 3.3. DevOps
-- Docker
-- GitHub Actions
-- Nginx
-- PM2
+#### 3.3. Deployment
+- Render.com cho hosting
+- MySQL database hosting
 
 ### 4. Phân tích yêu cầu
 
 #### 4.1. Yêu cầu chức năng
 1. Quản lý nhóm
    - Tạo nhóm mới
-   - Mời thành viên
+   - Mời thành viên qua Telegram ID
    - Rời nhóm
-   - Xóa thành viên
+   - Xóa thành viên (cho admin)
 
 2. Quản lý nhiệm vụ
    - Tạo nhiệm vụ mới
-   - Phân công nhiệm vụ
-   - Cập nhật trạng thái
+   - Phân công nhiệm vụ cho thành viên
+   - Cập nhật trạng thái nhiệm vụ
    - Xóa nhiệm vụ
 
 3. Thông báo
-   - Thông báo nhiệm vụ mới
+   - Thông báo qua Telegram Bot
    - Nhắc nhở deadline
-   - Thông báo cập nhật trạng thái
+   - Thông báo khi có nhiệm vụ mới
 
 #### 4.2. Yêu cầu phi chức năng
 1. Hiệu suất
-   - Thời gian phản hồi < 2s
-   - Hỗ trợ đồng thời 1000+ người dùng
+   - Thời gian phản hồi nhanh
+   - Tối ưu hóa database queries
 
 2. Bảo mật
    - Xác thực qua Telegram
-   - Phân quyền người dùng
-   - Mã hóa dữ liệu
+   - Phân quyền người dùng (admin/user)
 
 3. Khả năng mở rộng
-   - Kiến trúc microservices
-   - Caching layer
-   - Load balancing
+   - Code structure cho phép dễ dàng thêm tính năng mới
+   - Database schema có thể mở rộng
 
 ### 5. Thiết kế cơ sở dữ liệu
 
@@ -167,7 +161,6 @@ CREATE TABLE tasks (
 ```javascript
 POST /api/users/register
 GET /api/users/:id
-PUT /api/users/:id
 DELETE /api/users/leave-group
 ```
 
@@ -195,39 +188,35 @@ GET /api/tasks/my-tasks
 1. Trang chủ
    - Danh sách nhóm
    - Thống kê nhiệm vụ
-   - Thông báo mới
 
 2. Quản lý nhóm
    - Danh sách thành viên
-   - Mời thành viên
-   - Cài đặt nhóm
+   - Mời thành viên qua Telegram ID
+   - Nút rời nhóm
 
 3. Quản lý nhiệm vụ
    - Tạo nhiệm vụ
    - Danh sách nhiệm vụ
-   - Bộ lọc và tìm kiếm
+   - Cập nhật trạng thái
 
 #### 7.2. Responsive Design
 - Mobile-first approach
-- Adaptive layout
-- Touch-friendly interface
+- Adaptive layout cho Telegram Mini App
 
 ### 8. Tính năng chính
 
 #### 8.1. Quản lý nhóm
 1. Tạo nhóm
    - Đặt tên nhóm
-   - Thêm thành viên
-   - Phân quyền admin
+   - Tự động thêm người tạo làm admin
 
 2. Mời thành viên
    - Tìm kiếm qua Telegram ID
    - Gửi lời mời
-   - Xác nhận tham gia
+   - Tự động thêm vào nhóm
 
 3. Rời nhóm
    - Xác nhận rời nhóm
-   - Chuyển quyền admin
    - Xóa nhiệm vụ liên quan
 
 #### 8.2. Quản lý nhiệm vụ
@@ -242,84 +231,59 @@ GET /api/tasks/my-tasks
    - Completed
 
 3. Thông báo
-   - Nhiệm vụ mới
-   - Sắp đến deadline
-   - Cập nhật trạng thái
+   - Thông báo qua Telegram Bot
+   - Nhắc nhở deadline
 
 ### 9. Bảo mật
 
 #### 9.1. Xác thực
 - Telegram Login Widget
-- JWT Token
-- Session Management
+- Telegram Mini App authentication
 
 #### 9.2. Phân quyền
-- Role-based access control
+- Role-based access control (admin/user)
 - Team-level permissions
-- Task-level permissions
 
 #### 9.3. Bảo vệ dữ liệu
 - Input validation
 - SQL injection prevention
-- XSS protection
 
 ### 10. Quy trình phát triển
 
 #### 10.1. Phương pháp luận
-- Agile/Scrum
-- 2-week sprints
-- Daily standups
+- Agile development
+- Feature-based development
 
 #### 10.2. Version Control
-- Git workflow
+- Git
 - Feature branches
-- Code review
-
-#### 10.3. CI/CD
-- Automated testing
-- Deployment pipeline
-- Environment management
 
 ### 11. Thử nghiệm và kiểm thử
 
-#### 11.1. Unit Testing
-- Jest
-- React Testing Library
-- API testing
+#### 11.1. Testing
+- Manual testing
+- User acceptance testing
 
-#### 11.2. Integration Testing
-- End-to-end testing
-- Performance testing
-- Security testing
-
-#### 11.3. User Testing
-- Beta testing
+#### 11.2. Bug Tracking
+- GitHub Issues
 - User feedback
-- Bug tracking
 
 ### 12. Triển khai
 
 #### 12.1. Infrastructure
-- Cloud hosting
-- Load balancing
-- Database replication
+- Render.com hosting
+- MySQL database
 
 #### 12.2. Monitoring
-- Error tracking
-- Performance monitoring
-- User analytics
-
-#### 12.3. Maintenance
-- Regular updates
-- Backup strategy
-- Disaster recovery
+- Error logging
+- User feedback
 
 ### 13. Kết luận và hướng phát triển
 
 #### 13.1. Kết quả đạt được
 - Hoàn thành các tính năng cốt lõi
 - Tích hợp thành công với Telegram
-- Hiệu suất và độ tin cậy tốt
+- Giao diện thân thiện với người dùng
 
 #### 13.2. Thách thức
 - Xử lý đồng thời nhiều người dùng
@@ -335,7 +299,7 @@ GET /api/tasks/my-tasks
 2. Cải tiến
    - Performance optimization
    - UI/UX enhancement
-   - Mobile app development
+   - Real-time updates
 
 3. Mở rộng
    - Multi-language support

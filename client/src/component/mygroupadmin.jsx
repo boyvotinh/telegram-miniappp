@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
   List, Card, Typography, Button, Input, Divider, Empty, message as antdMessage,
-  Avatar, Modal, Tag, Space, DatePicker, theme, Row, Col, Statistic
+  Avatar, Modal, Tag, Space, DatePicker, theme, Row, Col, Statistic, Progress, Badge
 } from 'antd';
 import { 
   TeamOutlined, PlusOutlined, UserOutlined, FormOutlined, DeleteOutlined,
-  ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined
+  ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined,
+  CalendarOutlined, TeamOutlined as TeamIcon
 } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 function MyGroupsAsAdmin({ user, groups }) {
   const { token } = theme.useToken();
@@ -263,30 +264,42 @@ function MyGroupsAsAdmin({ user, groups }) {
 
   return (
     <div style={{ padding: '24px', maxWidth: 1200, margin: '0 auto' }}>
-      <Row gutter={[24, 24]} align="middle" style={{ marginBottom: 24 }}>
-        <Col>
-          <Title level={3} style={{ margin: 0 }}>
-            <TeamOutlined style={{ color: token.colorPrimary }} /> Nhóm bạn đã tạo
-          </Title>
-        </Col>
-        <Col>
-          <Statistic 
-            value={adminGroups.length} 
-            suffix="nhóm"
-            valueStyle={{ color: token.colorPrimary }}
-          />
-        </Col>
-      </Row>
+      <div style={{ 
+        background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)',
+        padding: '24px',
+        borderRadius: '12px',
+        color: 'white',
+        marginBottom: '24px'
+      }}>
+        <Row gutter={[24, 24]} align="middle">
+          <Col>
+            <Title level={3} style={{ color: 'white', margin: 0 }}>
+              <TeamOutlined /> Nhóm bạn đã tạo
+            </Title>
+            <Text style={{ color: 'rgba(255,255,255,0.85)' }}>
+              Quản lý và theo dõi các nhóm của bạn
+            </Text>
+          </Col>
+          <Col>
+            <Statistic 
+              value={adminGroups.length} 
+              suffix="nhóm"
+              valueStyle={{ color: 'white' }}
+            />
+          </Col>
+        </Row>
+      </div>
 
       {adminGroups.length === 0 ? (
         <Card style={{ 
-          borderRadius: token.borderRadiusLG,
-          boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+          borderRadius: 12,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           marginTop: 24
         }}>
           <Empty 
             description="Bạn chưa tạo nhóm nào. Hãy tạo nhóm mới!" 
             style={{ margin: '50px 0' }}
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         </Card>
       ) : (
@@ -299,24 +312,21 @@ function MyGroupsAsAdmin({ user, groups }) {
                 hoverable
                 onClick={() => handleSelectGroup(group)}
                 style={{ 
-                  borderRadius: token.borderRadiusLG,
+                  borderRadius: 12,
                   transition: 'all 0.3s',
-                  height: '100%'
+                  height: '100%',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                 }}
-                styles={{
-                  body: {
-                    padding: '20px'
-                  }
-                }}
+                bodyStyle={{ padding: '20px' }}
               >
                 <Card.Meta
                   avatar={
                     <Avatar 
                       size={48} 
-                      icon={<TeamOutlined />} 
+                      icon={<TeamIcon />} 
                       style={{ 
-                        backgroundColor: token.colorPrimary,
-                        color: '#fff'
+                        backgroundColor: '#1890ff',
+                        boxShadow: '0 2px 8px rgba(24,144,255,0.3)'
                       }} 
                     />
                   }
@@ -331,7 +341,7 @@ function MyGroupsAsAdmin({ user, groups }) {
                         <UserOutlined /> {groupMembers[group.id] || 0} thành viên
                       </Text>
                       <Text type="secondary">
-                        <ClockCircleOutlined /> Tạo ngày {dayjs(group.created_at).format('DD/MM/YYYY')}
+                        <CalendarOutlined /> Tạo ngày {dayjs(group.created_at).format('DD/MM/YYYY')}
                       </Text>
                     </Space>
                   }
@@ -345,12 +355,12 @@ function MyGroupsAsAdmin({ user, groups }) {
       <Card 
         style={{ 
           marginTop: 24,
-          borderRadius: token.borderRadiusLG,
-          boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+          borderRadius: 12,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}
       >
         <Title level={4} style={{ marginBottom: 16 }}>
-          <PlusOutlined style={{ color: token.colorPrimary }} /> Tạo nhóm mới
+          <PlusOutlined style={{ color: '#1890ff' }} /> Tạo nhóm mới
         </Title>
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
           <Input
@@ -374,7 +384,7 @@ function MyGroupsAsAdmin({ user, groups }) {
       <Modal
         title={
           <Space>
-            <TeamOutlined style={{ color: token.colorPrimary }} />
+            <TeamOutlined style={{ color: '#1890ff' }} />
             <span>Chi tiết nhóm: {selectedGroup?.name}</span>
           </Space>
         }
@@ -382,25 +392,18 @@ function MyGroupsAsAdmin({ user, groups }) {
         onCancel={closeModal}
         footer={null}
         width={800}
-        styles={{
-          body: {
-            padding: '24px'
-          }
-        }}
+        bodyStyle={{ padding: '24px' }}
       >
         <Row gutter={[24, 24]}>
           <Col span={24}>
             <Card 
               title="Danh sách thành viên" 
               variant="borderless"
-              styles={{
-                body: {
-                  padding: '16px'
-                }
-              }}
+              style={{ borderRadius: 12 }}
+              bodyStyle={{ padding: '16px' }}
             >
               {members.length === 0 ? (
-                <Empty description="Không có thành viên nào." />
+                <Empty description="Không có thành viên nào." image={Empty.PRESENTED_IMAGE_SIMPLE} />
               ) : (
                 <List
                   itemLayout="horizontal"
@@ -429,7 +432,10 @@ function MyGroupsAsAdmin({ user, groups }) {
                           <Avatar 
                             size={40} 
                             icon={<UserOutlined />}
-                            style={{ backgroundColor: token.colorPrimary }}
+                            style={{ 
+                              backgroundColor: '#1890ff',
+                              boxShadow: '0 2px 8px rgba(24,144,255,0.3)'
+                            }}
                           />
                         }
                         title={<Text strong>{member.name}</Text>}
@@ -453,11 +459,8 @@ function MyGroupsAsAdmin({ user, groups }) {
             <Card 
               title="Mời thêm thành viên" 
               variant="borderless"
-              styles={{
-                body: {
-                  padding: '16px'
-                }
-              }}
+              style={{ borderRadius: 12 }}
+              bodyStyle={{ padding: '16px' }}
             >
               <Space.Compact style={{ width: '100%' }}>
                 <Input
@@ -483,7 +486,7 @@ function MyGroupsAsAdmin({ user, groups }) {
       <Modal
         title={
           <Space>
-            <FormOutlined style={{ color: token.colorPrimary }} />
+            <FormOutlined style={{ color: '#1890ff' }} />
             <span>{selectedTask ? 'Chỉnh sửa nhiệm vụ' : 'Giao nhiệm vụ mới'}</span>
           </Space>
         }
@@ -496,11 +499,7 @@ function MyGroupsAsAdmin({ user, groups }) {
         onOk={selectedTask ? handleEditTask : handleAssignTask}
         okText={selectedTask ? 'Cập nhật' : 'Giao nhiệm vụ'}
         width={600}
-        styles={{
-          body: {
-            padding: '24px'
-          }
-        }}
+        bodyStyle={{ padding: '24px' }}
       >
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <Input
@@ -528,7 +527,7 @@ function MyGroupsAsAdmin({ user, groups }) {
       <Modal
         title={
           <Space>
-            <FormOutlined style={{ color: token.colorPrimary }} />
+            <FormOutlined style={{ color: '#1890ff' }} />
             <span>Nhiệm vụ đã giao cho {selectedMember?.name}</span>
           </Space>
         }
@@ -546,14 +545,10 @@ function MyGroupsAsAdmin({ user, groups }) {
           </Button>
         ]}
         width={800}
-        styles={{
-          body: {
-            padding: '24px'
-          }
-        }}
+        bodyStyle={{ padding: '24px' }}
       >
         {tasks.length === 0 ? (
-          <Empty description="Chưa có nhiệm vụ nào." />
+          <Empty description="Chưa có nhiệm vụ nào." image={Empty.PRESENTED_IMAGE_SIMPLE} />
         ) : (
           <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
             <List
@@ -578,28 +573,36 @@ function MyGroupsAsAdmin({ user, groups }) {
                   ]}
                 >
                   <Card 
-                    style={{ width: '100%' }}
-                    variant="borderless"
-                    styles={{
-                      body: {
-                        padding: '16px'
-                      }
+                    style={{ 
+                      width: '100%',
+                      borderRadius: 12,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                     }}
+                    variant="borderless"
+                    bodyStyle={{ padding: '16px' }}
                   >
                     <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                       <Title level={5} style={{ margin: 0 }}>{task.title}</Title>
-                      <Text>{task.description || 'Không có mô tả'}</Text>
+                      <Paragraph>{task.description || 'Không có mô tả'}</Paragraph>
                       <Space>
-                        <Tag color={
-                          task.status === 'completed' ? 'success' :
-                          task.status === 'pending' ? 'processing' : 'error'
-                        }>
-                          {task.status === 'completed' ? <CheckCircleOutlined /> :
-                           task.status === 'pending' ? <ClockCircleOutlined /> :
-                           <CloseCircleOutlined />} {task.status}
-                        </Tag>
+                        <Badge 
+                          status={
+                            task.status === 'completed' ? 'success' :
+                            task.status === 'pending' ? 'processing' : 'error'
+                          }
+                          text={
+                            <Tag color={
+                              task.status === 'completed' ? 'success' :
+                              task.status === 'pending' ? 'processing' : 'error'
+                            }>
+                              {task.status === 'completed' ? <CheckCircleOutlined /> :
+                               task.status === 'pending' ? <ClockCircleOutlined /> :
+                               <CloseCircleOutlined />} {task.status}
+                            </Tag>
+                          }
+                        />
                         <Tag color="blue">
-                          <ClockCircleOutlined /> Hạn chót: {task.deadline || 'Không có'}
+                          <CalendarOutlined /> Hạn chót: {task.deadline || 'Không có'}
                         </Tag>
                       </Space>
                     </Space>
