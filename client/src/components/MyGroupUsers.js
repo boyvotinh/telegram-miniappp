@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const MyGroupUsers = () => {
@@ -6,9 +6,20 @@ const MyGroupUsers = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const fetchUsers = async () => {
     try {
+      // Lấy thông tin người dùng hiện tại
+      const telegramId = window.Telegram.WebApp.initDataUnsafe.user.id;
+      const userResponse = await axios.get(`/api/users/me?telegram_id=${telegramId}`);
+      setCurrentUser(userResponse.data);
+
+      // Lấy danh sách thành viên
       const response = await axios.get('/api/users');
       setUsers(response.data);
       setLoading(false);
@@ -35,7 +46,18 @@ const MyGroupUsers = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Danh sách thành viên</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Danh sách thành viên</h2>
+        {currentUser && currentUser.role !== 'admin' && (
+          <button
+            onClick={() => setShowLeaveConfirm(true)}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          >
+            Rời nhóm
+          </button>
+        )}
+      </div>
+
       {error && <div className="text-red-500 mb-4">{error}</div>}
       {loading ? (
         <div>Đang tải...</div>
@@ -47,16 +69,8 @@ const MyGroupUsers = () => {
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="font-semibold">{user.name}</h3>
-                    <p className="text-gray-600">{user.role}</p>
+                    <p className="text-gray-600">{user.role || 'Thành viên'}</p>
                   </div>
-                  {user.isCurrentUser && user.role !== 'admin' && (
-                    <button
-                      onClick={() => setShowLeaveConfirm(true)}
-                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                    >
-                      Rời nhóm
-                    </button>
-                  )}
                 </div>
               </div>
             ))}
