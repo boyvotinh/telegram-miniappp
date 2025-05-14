@@ -60,12 +60,10 @@ bot.onText(/\/task/, async (msg) => {
         }
 
         // Sau khi insert xong, gửi nút MiniApp và nhiệm vụ hôm nay
-        sendWebAppButton(chatId, name);
         sendDailyTaskNotification(chatId, telegramId);
       });
     } else {
       // Nếu đã có user ➔ gửi nút và thông báo nhiệm vụ hôm nay
-      sendWebAppButton(chatId, name);
       sendDailyTaskNotification(chatId, telegramId);
     }
   });
