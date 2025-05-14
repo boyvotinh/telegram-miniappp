@@ -21,7 +21,7 @@ const MyGroupUsers = () => {
 
   const handleLeaveGroup = async () => {
     try {
-      const response = await axios.post('/api/leave-group');
+      const response = await axios.post('/api/users/leave-group');
       if (response.data.success) {
         // Refresh danh sách thành viên sau khi rời nhóm
         fetchUsers();
