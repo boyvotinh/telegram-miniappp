@@ -82,25 +82,35 @@ function sendWebAppButton(chatId, name) {
     }
   });
 }
-
 // Hàm gửi thông báo nhiệm vụ hôm nay cho người dùng
 async function sendDailyTaskNotification(chatId, telegramId) {
   const today = new Date();
-  const todayDate = today.toISOString().split('T')[0]; // Lấy ngày hiện tại (YYYY-MM-DD)
+  const todayDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
 
-  db.query('SELECT * FROM tasks WHERE assigned_to = ? AND deadline = ?', [telegramId, todayDate], (err, results) => {
-    if (err) {
-      console.error(err);
-      return bot.sendMessage(chatId, '❌ Có lỗi xảy ra khi truy xuất thông tin nhiệm vụ.');
+  db.query(
+    'SELECT * FROM tasks WHERE assigned_to = ? AND deadline = ?',
+    [telegramId, todayDate],
+    (err, results) => {
+      if (err) {
+        console.error(err);
+        return bot.sendMessage(chatId, '❌ Có lỗi xảy ra khi truy xuất thông tin nhiệm vụ.');
+      }
+
+      if (results.length === 0) {
+        return bot.sendMessage(chatId, '❗ Hôm nay bạn không có nhiệm vụ nào.');
+      }
+
+      let message = `📅 *Danh sách nhiệm vụ hôm nay (${todayDate})*\n\n`;
+
+      results.forEach((task, index) => {
+        message += `*${index + 1}. ${task.title}*\n`;
+        message += `- Mô tả: ${task.description}\n`;
+        message += `- Hạn chót: ${task.deadline}\n`;
+        message += `- Trạng thái: ${task.status}\n\n`;
+      });
+
+      bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
     }
+  );
 
-    if (results.length === 0) {
-      return bot.sendMessage(chatId, '❗ Hôm nay bạn không có nhiệm vụ nào.');
-    }
-
-    const task = results[0]; // Giả sử chỉ có một nhiệm vụ trong ngày
-    const message = `📅 *Nhiệm vụ hôm nay*\n\n*Tiêu đề:* ${task.title}\n*Mô tả:* ${task.description}\n*Hạn chót:* ${task.deadline}\n*Trạng thái:* ${task.status}`;
-    
-    bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
-  });
 }
