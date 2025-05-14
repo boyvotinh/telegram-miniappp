@@ -88,7 +88,7 @@ async function sendDailyTaskNotification(chatId, telegramId) {
   const todayDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
 
   db.query(
-    'SELECT * FROM tasks WHERE assigned_to = ? AND deadline = ?',
+    'SELECT * FROM tasks WHERE assigned_to = ? AND AND DATE(deadline) = ?',
     [telegramId, todayDate],
     (err, results) => {
       if (err) {
