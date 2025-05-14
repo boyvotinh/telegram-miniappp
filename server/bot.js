@@ -99,37 +99,55 @@ async function sendDailyTaskNotification(chatId, telegramId) {
       }
 
       const userId = userResults[0].id;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-      // Lấy nhiệm vụ được giao trực tiếp cho người dùng
+      // Cập nhật trạng thái các nhiệm vụ qua hạn
       db.query(
-        `SELECT DISTINCT t.* 
-         FROM tasks t 
-         WHERE t.assigned_to = ?
-         ORDER BY t.deadline ASC`,
-        [userId],
-        (err, taskResults) => {
-          if (err) {
-            console.error(err);
-            return bot.sendMessage(chatId, '❌ Có lỗi xảy ra khi truy xuất thông tin nhiệm vụ.');
+        `UPDATE tasks 
+         SET status = 'completed' 
+         WHERE assigned_to = ? 
+         AND deadline < ? 
+         AND (status IS NULL OR status != 'completed')`,
+        [userId, today],
+        (updateErr) => {
+          if (updateErr) {
+            console.error('Lỗi khi cập nhật trạng thái nhiệm vụ:', updateErr);
           }
 
-          if (taskResults.length === 0) {
-            return bot.sendMessage(chatId, '❗ Bạn không có nhiệm vụ nào.');
-          }
+          // Lấy danh sách nhiệm vụ sau khi cập nhật
+          db.query(
+            `SELECT DISTINCT t.* 
+             FROM tasks t 
+             WHERE t.assigned_to = ?
+             ORDER BY t.deadline ASC`,
+            [userId],
+            (err, taskResults) => {
+              if (err) {
+                console.error(err);
+                return bot.sendMessage(chatId, '❌ Có lỗi xảy ra khi truy xuất thông tin nhiệm vụ.');
+              }
 
-          let message = `📅 *Danh sách nhiệm vụ của bạn*\n\n`;
+              if (taskResults.length === 0) {
+                return bot.sendMessage(chatId, '❗ Bạn không có nhiệm vụ nào.');
+              }
 
-          taskResults.forEach((task, index) => {
-            // Format lại ngày tháng cho dễ đọc
-            const deadline = new Date(task.deadline).toLocaleDateString('vi-VN');
-            
-            message += `*${index + 1}. ${task.title}*\n`;
-            message += `- Mô tả: ${task.description || 'Không có mô tả'}\n`;
-            message += `- Hạn chót: ${deadline}\n`;
-            message += `- Trạng thái: ${task.status || 'Chưa có trạng thái'}\n\n`;
-          });
+              let message = `📅 *Danh sách nhiệm vụ của bạn*\n\n`;
 
-          bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+              taskResults.forEach((task, index) => {
+                const deadline = new Date(task.deadline);
+                const deadlineFormatted = deadline.toLocaleDateString('vi-VN');
+                const isOverdue = deadline < today;
+                
+                message += `*${index + 1}. ${task.title}*\n`;
+                message += `- Mô tả: ${task.description || 'Không có mô tả'}\n`;
+                message += `- Hạn chót: ${deadlineFormatted} ${isOverdue ? '⚠️ (Đã qua hạn)' : ''}\n`;
+                message += `- Trạng thái: ${task.status || 'Chưa có trạng thái'}\n\n`;
+              });
+
+              bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+            }
+          );
         }
       );
     }
