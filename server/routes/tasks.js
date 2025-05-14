@@ -1,21 +1,41 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-router.post('/assign', (req, res) => {
-  const { title, description, deadline, assigned_to, team_id } = req.body;
-      const insertSql = `
-        INSERT INTO tasks (title, description, deadline, assigned_to, team_id)
-        VALUES (?, ?, ?, ?, ?)
-      `;
-      db.query(insertSql, [title, description, deadline, assigned_to, team_id], (err3, result) => {
-        if (err3) {
-          console.error('Lỗi tạo nhiệm vụ:', err3);
-          return res.status(500).json({ error: 'Lỗi khi tạo nhiệm vụ' });
-        }
+const { sendTaskNotification } = require('../services/taskNotification');
 
-        res.status(201).json({ message: 'Đã tạo nhiệm vụ', taskId: result.insertId });
-      });
-    });
+router.post('/assign', async (req, res) => {
+  const { title, description, deadline, assigned_to, team_id } = req.body;
+  
+  try {
+    // Tạo nhiệm vụ mới
+    const [result] = await db.query(
+      'INSERT INTO tasks (title, description, deadline, assigned_to, team_id) VALUES (?, ?, ?, ?, ?)',
+      [title, description, deadline, assigned_to, team_id]
+    );
+
+    // Lấy thông tin user được giao nhiệm vụ
+    const [users] = await db.query(
+      'SELECT telegram_id FROM users WHERE id = ?',
+      [assigned_to]
+    );
+
+    // Gửi thông báo cho user
+    if (users.length > 0 && users[0].telegram_id) {
+      const task = {
+        title,
+        description,
+        deadline
+      };
+      await sendTaskNotification(users[0].telegram_id, task);
+    }
+
+    res.status(201).json({ message: 'Đã tạo nhiệm vụ', taskId: result.insertId });
+  } catch (error) {
+    console.error('Lỗi tạo nhiệm vụ:', error);
+    res.status(500).json({ error: 'Lỗi khi tạo nhiệm vụ' });
+  }
+});
+
 // Cập nhật nhiệm vụ
 router.put('/update/:taskId', (req, res) => {
   const taskId = req.params.id;
@@ -37,7 +57,7 @@ router.put('/update/:taskId', (req, res) => {
 
 // Xoá nhiệm vụ
 router.delete('/delete/:taskId', (req, res) => {
-  const taskId = req.params.taskId;  // Sửa lại dòng này
+  const taskId = req.params.taskId;
 
   const deleteSql = 'DELETE FROM tasks WHERE id = ?';
   db.query(deleteSql, [taskId], (err2, result) => {
@@ -47,7 +67,6 @@ router.delete('/delete/:taskId', (req, res) => {
     res.json({ message: 'Nhiệm vụ đã được xoá' });
   });
 });
-
 
 router.get('/my-tasks', (req, res) => {
   const { team_id, user_id, status, deadline_from, deadline_to } = req.query;
@@ -87,10 +106,11 @@ router.get('/my-tasks', (req, res) => {
     });
   });
 });
+
 // xem nhiệm vụ
 router.get('/user/:userId', (req, res) => {
   const userId = req.params.userId;
-  const teamId = req.query.team_id; // Thêm team_id từ query params
+  const teamId = req.query.team_id;
 
   let query = `
     SELECT tasks.*, teams.name AS groupName
@@ -115,6 +135,5 @@ router.get('/user/:userId', (req, res) => {
     res.json(results);
   });
 });
-
 
 module.exports = router;

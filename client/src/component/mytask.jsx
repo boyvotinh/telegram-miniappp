@@ -1,17 +1,26 @@
-import React from 'react';
-import { List, Card, Typography, Empty, Space, Tag, Badge, Row, Col, Statistic, Progress } from 'antd';
+import React, { useState } from 'react';
+import { List, Card, Typography, Empty, Space, Tag, Badge, Row, Col, Statistic, Progress, Modal, Button, Upload, message } from 'antd';
 import { 
   FileTextOutlined, 
   CheckCircleOutlined, 
   ClockCircleOutlined, 
   CloseCircleOutlined,
   CalendarOutlined,
-  TeamOutlined
+  TeamOutlined,
+  UploadOutlined,
+  FileOutlined,
+  PaperClipOutlined
 } from '@ant-design/icons';
+import axios from 'axios';
 
 const { Title, Text, Paragraph } = Typography;
 
 function MyTasks({ tasks }) {
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [fileList, setFileList] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
   const getStatusColor = (status) => {
     switch(status) {
       case 'completed':
@@ -40,6 +49,48 @@ function MyTasks({ tasks }) {
     const inProgress = tasks.filter(task => task.status === 'in_progress').length;
     const pending = total - completed - inProgress;
     return { total, completed, inProgress, pending };
+  };
+
+  const handleTaskClick = (task) => {
+    setSelectedTask(task);
+    setIsModalOpen(true);
+    setFileList([]);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setSelectedTask(null);
+    setFileList([]);
+  };
+
+  const handleSubmit = async () => {
+    if (fileList.length === 0) {
+      message.warning('Vui lòng chọn file để nộp');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      fileList.forEach(file => {
+        formData.append('files', file.originFileObj);
+      });
+      formData.append('taskId', selectedTask.id);
+
+      await axios.post('https://telegram-miniappp.onrender.com/api/tasks/submit', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      message.success('Nộp file thành công!');
+      handleCancel();
+    } catch (error) {
+      console.error('Lỗi khi nộp file:', error);
+      message.error('Không thể nộp file. Vui lòng thử lại sau.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const taskStats = getTaskStats(tasks);
@@ -136,6 +187,8 @@ function MyTasks({ tasks }) {
             renderItem={task => (
               <List.Item>
                 <Card 
+                  hoverable
+                  onClick={() => handleTaskClick(task)}
                   style={{ 
                     borderRadius: 12,
                     height: '100%',
@@ -178,6 +231,15 @@ function MyTasks({ tasks }) {
                           <Text strong>Nhóm:</Text> {task.groupName}
                         </Text>
                       </Space>
+
+                      {task.submitted_files && task.submitted_files.length > 0 && (
+                        <Space>
+                          <PaperClipOutlined />
+                          <Text>
+                            <Text strong>File đã nộp:</Text> {task.submitted_files.length} file
+                          </Text>
+                        </Space>
+                      )}
                     </Space>
                   </Space>
                 </Card>
@@ -186,6 +248,72 @@ function MyTasks({ tasks }) {
           />
         </Space>
       )}
+
+      <Modal
+        title={
+          <Space>
+            <FileTextOutlined />
+            <span>Nộp file cho nhiệm vụ: {selectedTask?.title}</span>
+          </Space>
+        }
+        open={isModalOpen}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="cancel" onClick={handleCancel}>
+            Hủy
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            onClick={handleSubmit}
+            loading={uploading}
+            icon={<UploadOutlined />}
+          >
+            Nộp file
+          </Button>
+        ]}
+        width={600}
+      >
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <div>
+            <Text strong>Mô tả nhiệm vụ:</Text>
+            <Paragraph>{selectedTask?.description || 'Không có mô tả'}</Paragraph>
+          </div>
+
+          <div>
+            <Text strong>File đã nộp:</Text>
+            {selectedTask?.submitted_files && selectedTask.submitted_files.length > 0 ? (
+              <List
+                size="small"
+                dataSource={selectedTask.submitted_files}
+                renderItem={file => (
+                  <List.Item>
+                    <Space>
+                      <FileOutlined />
+                      <Text>{file.name}</Text>
+                    </Space>
+                  </List.Item>
+                )}
+              />
+            ) : (
+              <Text type="secondary">Chưa có file nào được nộp</Text>
+            )}
+          </div>
+
+          <div>
+            <Text strong>Nộp file mới:</Text>
+            <Upload
+              multiple
+              fileList={fileList}
+              onChange={({ fileList }) => setFileList(fileList)}
+              beforeUpload={() => false}
+              style={{ marginTop: 8 }}
+            >
+              <Button icon={<UploadOutlined />}>Chọn file</Button>
+            </Upload>
+          </div>
+        </Space>
+      </Modal>
     </div>
   );
 }
