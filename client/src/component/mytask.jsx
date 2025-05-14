@@ -47,11 +47,12 @@ function MyTasks({ tasks }) {
   return (
     <div style={{ padding: '24px', maxWidth: 1200, margin: '0 auto' }}>
       <div style={{ 
-        background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)',
+        background: 'linear-gradient(135deg, #722ed1 0%, #b37feb 100%)',
         padding: '24px',
         borderRadius: '12px',
         color: 'white',
-        marginBottom: '24px'
+        marginBottom: '24px',
+        boxShadow: '0 2px 8px rgba(114,46,209,0.2)'
       }}>
         <Row gutter={[24, 24]} align="middle">
           <Col>

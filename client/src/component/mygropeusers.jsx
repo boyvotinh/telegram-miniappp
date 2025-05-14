@@ -107,10 +107,12 @@ function MyGroupsAsUser({ user, groups }) {
     <div style={{ padding: '16px', maxWidth: '1200px', margin: '0 auto' }}>
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <div style={{ 
-          background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)',
+          background: 'linear-gradient(135deg, #722ed1 0%, #b37feb 100%)',
           padding: '24px',
           borderRadius: '12px',
-          color: 'white'
+          color: 'white',
+          marginBottom: '24px',
+          boxShadow: '0 2px 8px rgba(114,46,209,0.2)'
         }}>
           <Title level={3} style={{ color: 'white', margin: 0 }}>
             <TeamOutlined /> Nhóm tôi tham gia
