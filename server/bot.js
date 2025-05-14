@@ -115,37 +115,72 @@ async function sendDailyTaskNotification(chatId, telegramId) {
             console.error('Lỗi khi cập nhật trạng thái nhiệm vụ:', updateErr);
           }
 
-          // Lấy danh sách nhiệm vụ sau khi cập nhật
+          // Lấy 2 nhiệm vụ completed gần nhất
           db.query(
             `SELECT DISTINCT t.* 
              FROM tasks t 
-             WHERE t.assigned_to = ?
-             ORDER BY t.deadline ASC`,
+             WHERE t.assigned_to = ? AND t.status = 'completed'
+             ORDER BY t.deadline DESC
+             LIMIT 2`,
             [userId],
-            (err, taskResults) => {
+            (err, completedTasks) => {
               if (err) {
                 console.error(err);
                 return bot.sendMessage(chatId, '❌ Có lỗi xảy ra khi truy xuất thông tin nhiệm vụ.');
               }
 
-              if (taskResults.length === 0) {
-                return bot.sendMessage(chatId, '❗ Bạn không có nhiệm vụ nào.');
-              }
+              // Lấy 3 nhiệm vụ pending gần nhất
+              db.query(
+                `SELECT DISTINCT t.* 
+                 FROM tasks t 
+                 WHERE t.assigned_to = ? AND (t.status IS NULL OR t.status != 'completed')
+                 ORDER BY t.deadline ASC
+                 LIMIT 3`,
+                [userId],
+                (err, pendingTasks) => {
+                  if (err) {
+                    console.error(err);
+                    return bot.sendMessage(chatId, '❌ Có lỗi xảy ra khi truy xuất thông tin nhiệm vụ.');
+                  }
 
-              let message = `📅 *Danh sách nhiệm vụ của bạn*\n\n`;
+                  const allTasks = [...completedTasks, ...pendingTasks];
+                  
+                  if (allTasks.length === 0) {
+                    return bot.sendMessage(chatId, '❗ Bạn không có nhiệm vụ nào.');
+                  }
 
-              taskResults.forEach((task, index) => {
-                const deadline = new Date(task.deadline);
-                const deadlineFormatted = deadline.toLocaleDateString('vi-VN');
-                const isOverdue = deadline < today;
-                
-                message += `*${index + 1}. ${task.title}*\n`;
-                message += `- Mô tả: ${task.description || 'Không có mô tả'}\n`;
-                message += `- Hạn chót: ${deadlineFormatted} ${isOverdue ? '⚠️ (Đã qua hạn)' : ''}\n`;
-                message += `- Trạng thái: ${task.status || 'Chưa có trạng thái'}\n\n`;
-              });
+                  let message = `📅 *Danh sách nhiệm vụ của bạn*\n\n`;
 
-              bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+                  // Hiển thị nhiệm vụ đã hoàn thành
+                  if (completedTasks.length > 0) {
+                    message += `✅ *Nhiệm vụ đã hoàn thành:*\n\n`;
+                    completedTasks.forEach((task, index) => {
+                      const deadline = new Date(task.deadline);
+                      const deadlineFormatted = deadline.toLocaleDateString('vi-VN');
+                      
+                      message += `*${index + 1}. ${task.title}*\n`;
+                      message += `- Mô tả: ${task.description || 'Không có mô tả'}\n`;
+                      message += `- Hạn chót: ${deadlineFormatted}\n\n`;
+                    });
+                  }
+
+                  // Hiển thị nhiệm vụ đang thực hiện
+                  if (pendingTasks.length > 0) {
+                    message += `⏳ *Nhiệm vụ đang thực hiện:*\n\n`;
+                    pendingTasks.forEach((task, index) => {
+                      const deadline = new Date(task.deadline);
+                      const deadlineFormatted = deadline.toLocaleDateString('vi-VN');
+                      const isOverdue = deadline < today;
+                      
+                      message += `*${index + 1}. ${task.title}*\n`;
+                      message += `- Mô tả: ${task.description || 'Không có mô tả'}\n`;
+                      message += `- Hạn chót: ${deadlineFormatted} ${isOverdue ? '⚠️ (Đã qua hạn)' : ''}\n\n`;
+                    });
+                  }
+
+                  bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+                }
+              );
             }
           );
         }
