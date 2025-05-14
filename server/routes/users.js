@@ -57,17 +57,35 @@ router.get('/me', (req, res) => {
 });
 
 // API để rời nhóm
-router.post('/leave-group', async (req, res) => {
-  const userId = req.user.id; // Giả sử đã có middleware xác thực người dùng
+router.delete('/leave-group', async (req, res) => {
+  const { groupId, telegram_id } = req.body;
+
+  if (!groupId || !telegram_id) {
+    return res.status(400).json({
+      success: false,
+      message: 'Thiếu thông tin groupId hoặc telegram_id'
+    });
+  }
 
   try {
+    // Lấy user_id từ telegram_id
+    const [user] = await db.query('SELECT id FROM users WHERE telegram_id = ?', [telegram_id]);
+    if (!user || user.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
+
+    const userId = user[0].id;
+
     // Kiểm tra xem người dùng có phải là admin không
     const [adminCheck] = await db.query(
       `SELECT t.created_by 
        FROM teams t 
        JOIN team_members tm ON t.id = tm.team_id 
-       WHERE tm.user_id = ?`,
-      [userId]
+       WHERE tm.team_id = ? AND tm.user_id = ?`,
+      [groupId, userId]
     );
 
     if (adminCheck && adminCheck.created_by === userId) {
@@ -79,8 +97,8 @@ router.post('/leave-group', async (req, res) => {
 
     // Xóa thành viên khỏi team_members
     await db.query(
-      'DELETE FROM team_members WHERE user_id = ?',
-      [userId]
+      'DELETE FROM team_members WHERE team_id = ? AND user_id = ?',
+      [groupId, userId]
     );
 
     res.json({

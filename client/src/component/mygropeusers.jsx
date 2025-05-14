@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import {
-  Typography, List, Card, Modal, Button, Divider, Tag, Empty, Avatar
+  Typography, List, Card, Modal, Button, Divider, Tag, Empty, Avatar, message
 } from 'antd';
-import { UserOutlined, TeamOutlined, FileTextOutlined } from '@ant-design/icons';
+import { UserOutlined, TeamOutlined, FileTextOutlined, LogoutOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
@@ -11,6 +11,7 @@ function MyGroupsAsUser({ user, groups }) {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
 
   const handleSelectGroup = async (group) => {
     setSelectedGroup(group);
@@ -30,6 +31,31 @@ function MyGroupsAsUser({ user, groups }) {
     setIsModalOpen(false);
     setSelectedGroup(null);
     setTasks([]);
+  };
+
+  const handleLeaveGroup = async () => {
+    try {
+      const initData = window.Telegram.WebApp.initDataUnsafe;
+      if (!initData || !initData.user) {
+        message.error('Không thể xác thực người dùng');
+        return;
+      }
+
+      await axios.delete(`https://telegram-miniappp.onrender.com/api/users/leave-group`, {
+        data: {
+          groupId: selectedGroup.id,
+          telegram_id: initData.user.id
+        }
+      });
+      message.success('Đã rời nhóm thành công');
+      setIsLeaveModalOpen(false);
+      closeModal();
+      // Refresh danh sách nhóm
+      window.location.reload();
+    } catch (error) {
+      console.error('Lỗi khi rời nhóm:', error);
+      message.error('Không thể rời nhóm. Vui lòng thử lại sau.');
+    }
   };
 
   // Sửa đúng lọc nhóm
@@ -67,7 +93,14 @@ function MyGroupsAsUser({ user, groups }) {
         title={<span><TeamOutlined /> Chi tiết nhóm: {selectedGroup?.name}</span>}
         open={isModalOpen}
         onCancel={closeModal}
-        footer={<Button onClick={closeModal}>Đóng</Button>}
+        footer={[
+          <Button key="leave" danger icon={<LogoutOutlined />} onClick={() => setIsLeaveModalOpen(true)}>
+            Rời nhóm
+          </Button>,
+          <Button key="close" onClick={closeModal}>
+            Đóng
+          </Button>
+        ]}
         width={700}
       >
         <p><strong>Người tạo:</strong> {selectedGroup?.created_by}</p>
@@ -93,6 +126,24 @@ function MyGroupsAsUser({ user, groups }) {
             )}
           />
         )}
+      </Modal>
+
+      {/* Modal xác nhận rời nhóm */}
+      <Modal
+        title="Xác nhận rời nhóm"
+        open={isLeaveModalOpen}
+        onCancel={() => setIsLeaveModalOpen(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setIsLeaveModalOpen(false)}>
+            Hủy
+          </Button>,
+          <Button key="confirm" type="primary" danger onClick={handleLeaveGroup}>
+            Xác nhận rời nhóm
+          </Button>
+        ]}
+      >
+        <p>Bạn có chắc chắn muốn rời nhóm "{selectedGroup?.name}" không?</p>
+        <p style={{ color: 'red' }}>Lưu ý: Hành động này không thể hoàn tác.</p>
       </Modal>
     </div>
   );
