@@ -217,6 +217,11 @@ function MyGroupsAsAdmin({ user, groups }) {
       setIsAssignTaskModalOpen(false);
       setNewTask({ title: '', description: '', status: 'pending', deadline: null });
       setSelectedTask(null);
+      
+      // Cập nhật lại danh sách nhiệm vụ
+      const response = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${selectedMember.id}`);
+      const memberTasks = response.data.filter(task => task.team_id === selectedGroup.id);
+      setTasks(memberTasks);
     } catch (error) {
       console.error('Lỗi khi cập nhật nhiệm vụ:', error);
       antdMessage.error('Cập nhật nhiệm vụ thất bại!');
@@ -260,6 +265,24 @@ function MyGroupsAsAdmin({ user, groups }) {
     }
     setMembers(prev => prev.filter(member => member.id !== memberId));
 
+  };
+
+  const handleUpdateTaskStatus = async (taskId, newStatus) => {
+    try {
+      await axios.put(`https://telegram-miniappp.onrender.com/api/tasks/update/${taskId}`, {
+        status: newStatus
+      });
+
+      antdMessage.success('Cập nhật trạng thái thành công!');
+      
+      // Cập nhật lại danh sách nhiệm vụ
+      const response = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${selectedMember.id}`);
+      const memberTasks = response.data.filter(task => task.team_id === selectedGroup.id);
+      setTasks(memberTasks);
+    } catch (error) {
+      console.error('Lỗi khi cập nhật trạng thái:', error);
+      antdMessage.error('Không thể cập nhật trạng thái');
+    }
   };
 
   return (
@@ -605,6 +628,24 @@ function MyGroupsAsAdmin({ user, groups }) {
                         <Tag color="blue">
                           <CalendarOutlined /> Hạn chót: {task.deadline || 'Không có'}
                         </Tag>
+                      </Space>
+                      <Space>
+                        <Button 
+                          type="primary"
+                          size="small"
+                          onClick={() => handleUpdateTaskStatus(task.id, 'completed')}
+                          disabled={task.status === 'completed'}
+                        >
+                          <CheckCircleOutlined /> Hoàn thành
+                        </Button>
+                        <Button 
+                          type="default"
+                          size="small"
+                          onClick={() => handleUpdateTaskStatus(task.id, 'pending')}
+                          disabled={task.status === 'pending'}
+                        >
+                          <ClockCircleOutlined /> Đang thực hiện
+                        </Button>
                       </Space>
                     </Space>
                   </Card>
