@@ -41,12 +41,15 @@ function MyGroupsAsUser({ user, groups }) {
         return;
       }
 
-      await axios.delete(`https://telegram-miniappp.onrender.com/api/users/leave-group`, {
+      await axios({
+        method: 'delete',
+        url: `https://telegram-miniappp.onrender.com/api/users/leave-group`,
         data: {
           groupId: selectedGroup.id,
           telegram_id: initData.user.id
         }
       });
+      
       message.success('Đã rời nhóm thành công');
       setIsLeaveModalOpen(false);
       closeModal();
@@ -54,7 +57,7 @@ function MyGroupsAsUser({ user, groups }) {
       window.location.reload();
     } catch (error) {
       console.error('Lỗi khi rời nhóm:', error);
-      message.error('Không thể rời nhóm. Vui lòng thử lại sau.');
+      message.error(error.response?.data?.message || 'Không thể rời nhóm. Vui lòng thử lại sau.');
     }
   };
 

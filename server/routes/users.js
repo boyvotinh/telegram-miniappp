@@ -79,6 +79,19 @@ router.delete('/leave-group', async (req, res) => {
 
     const userId = user[0].id;
 
+    // Kiểm tra xem người dùng có trong nhóm không
+    const [memberCheck] = await db.query(
+      'SELECT * FROM team_members WHERE team_id = ? AND user_id = ?',
+      [groupId, userId]
+    );
+
+    if (!memberCheck || memberCheck.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Bạn không phải là thành viên của nhóm này'
+      });
+    }
+
     // Kiểm tra xem người dùng có phải là admin không
     const [adminCheck] = await db.query(
       `SELECT t.created_by 
