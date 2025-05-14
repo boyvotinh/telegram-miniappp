@@ -84,29 +84,52 @@ function sendWebAppButton(chatId, name) {
 }
 // Hàm gửi thông báo nhiệm vụ hôm nay cho người dùng
 async function sendDailyTaskNotification(chatId, telegramId) {
+  // Đầu tiên lấy user_id từ telegram_id
   db.query(
-    'SELECT * FROM tasks WHERE assigned_to = ? ORDER BY deadline ASC',
+    'SELECT id FROM users WHERE telegram_id = ?',
     [telegramId],
-    (err, results) => {
+    (err, userResults) => {
       if (err) {
         console.error(err);
-        return bot.sendMessage(chatId, '❌ Có lỗi xảy ra khi truy xuất thông tin nhiệm vụ.');
+        return bot.sendMessage(chatId, '❌ Có lỗi xảy ra khi truy xuất thông tin người dùng.');
       }
 
-      if (results.length === 0) {
-        return bot.sendMessage(chatId, '❗ Bạn không có nhiệm vụ nào.');
+      if (userResults.length === 0) {
+        return bot.sendMessage(chatId, '❗ Không tìm thấy thông tin người dùng.');
       }
 
-      let message = `📅 *Danh sách nhiệm vụ của bạn*\n\n`;
+      const userId = userResults[0].id;
 
-      results.forEach((task, index) => {
-        message += `*${index + 1}. ${task.title}*\n`;
-        message += `- Mô tả: ${task.description || 'Không có mô tả'}\n`;
-        message += `- Hạn chót: ${task.deadline}\n`;
-        message += `- Trạng thái: ${task.status || 'Chưa có trạng thái'}\n\n`;
-      });
+      // Sau đó lấy nhiệm vụ dựa trên user_id
+      db.query(
+        `SELECT t.*, tm.team_id 
+         FROM tasks t 
+         LEFT JOIN team_members tm ON t.team_id = tm.team_id 
+         WHERE t.assigned_to = ? OR tm.user_id = ?
+         ORDER BY t.deadline ASC`,
+        [userId, userId],
+        (err, taskResults) => {
+          if (err) {
+            console.error(err);
+            return bot.sendMessage(chatId, '❌ Có lỗi xảy ra khi truy xuất thông tin nhiệm vụ.');
+          }
 
-      bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+          if (taskResults.length === 0) {
+            return bot.sendMessage(chatId, '❗ Bạn không có nhiệm vụ nào.');
+          }
+
+          let message = `📅 *Danh sách nhiệm vụ của bạn*\n\n`;
+
+          taskResults.forEach((task, index) => {
+            message += `*${index + 1}. ${task.title}*\n`;
+            message += `- Mô tả: ${task.description || 'Không có mô tả'}\n`;
+            message += `- Hạn chót: ${task.deadline}\n`;
+            message += `- Trạng thái: ${task.status || 'Chưa có trạng thái'}\n\n`;
+          });
+
+          bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+        }
+      );
     }
   );
 }
