@@ -3,6 +3,7 @@ const TelegramBot = require('node-telegram-bot-api');
 
 const bot = new TelegramBot('7969413948:AAHVKr9OvRVkHTBSNecWDlEMiDZBn7mNcm4', { polling: true });
 
+// Lắng nghe lệnh /start để gửi nút mở MiniApp
 bot.onText(/\/start/, async (msg) => {
   const telegramId = msg.from.id;
   const name = msg.from.username || msg.from.first_name;
@@ -25,14 +26,47 @@ bot.onText(/\/start/, async (msg) => {
           return bot.sendMessage(chatId, '❌ Không thể lưu thông tin người dùng.');
         }
 
-        // Sau khi insert xong, gửi nút Mini App
+        // Sau khi insert xong, gửi nút MiniApp
         sendWebAppButton(chatId, name);
-        sendDailyTaskNotification(chatId, telegramId); // Gửi nhiệm vụ hôm nay
       });
     } else {
       // Nếu đã có user ➔ chỉ cần gửi nút
       sendWebAppButton(chatId, name);
-      sendDailyTaskNotification(chatId, telegramId); // Gửi nhiệm vụ hôm nay
+    }
+  });
+});
+
+// Lắng nghe lệnh /task để gửi thông báo nhiệm vụ
+bot.onText(/\/task/, async (msg) => {
+  const telegramId = msg.from.id;
+  const name = msg.from.username || msg.from.first_name;
+  const chatId = msg.chat.id;
+
+  // Gửi thông báo chờ
+  await bot.sendMessage(chatId, '⏳ Đang xử lý yêu cầu, vui lòng đợi...');
+
+  db.query('SELECT * FROM users WHERE telegram_id = ?', [telegramId], (err, results) => {
+    if (err) {
+      console.error(err);
+      return bot.sendMessage(chatId, '❌ Có lỗi xảy ra khi truy cập cơ sở dữ liệu.');
+    }
+
+    if (results.length === 0) {
+      // Nếu user CHƯA có thì insert và gửi nút MiniApp
+      db.query('INSERT INTO users (telegram_id, name) VALUES (?, ?)', [telegramId, name], (insertErr) => {
+        if (insertErr) {
+          console.error(insertErr);
+          return bot.sendMessage(chatId, '❌ Không thể lưu thông tin người dùng.');
+        }
+
+        // Sau khi insert xong, gửi nút MiniApp và nhiệm vụ hôm nay
+        sendWebAppButton(chatId, name);
+        sendDailyTaskNotification(chatId, telegramId);
+      });
+    } else {
+      // Nếu đã có user ➔ gửi nút và thông báo nhiệm vụ hôm nay
+      sendWebAppButton(chatId, name);
+      sendDailyTaskNotification(chatId, telegramId);
     }
   });
 });
