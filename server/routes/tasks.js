@@ -90,15 +90,23 @@ router.get('/my-tasks', (req, res) => {
 // xem nhiệm vụ
 router.get('/user/:userId', (req, res) => {
   const userId = req.params.userId;
+  const teamId = req.query.team_id; // Thêm team_id từ query params
 
-  const query = `
+  let query = `
     SELECT tasks.*, teams.name AS groupName
     FROM tasks
     LEFT JOIN teams ON tasks.team_id = teams.id
     WHERE assigned_to = ?
   `;
+  const params = [userId];
 
-  db.query(query, [userId], (err, results) => {
+  // Nếu có team_id, chỉ lấy nhiệm vụ của nhóm đó
+  if (teamId) {
+    query += ' AND tasks.team_id = ?';
+    params.push(teamId);
+  }
+
+  db.query(query, params, (err, results) => {
     if (err) {
       console.error('Lỗi khi lấy nhiệm vụ của user:', err);
       return res.status(500).json({ error: 'Lỗi server' });
