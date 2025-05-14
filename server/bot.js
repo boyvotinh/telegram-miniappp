@@ -100,14 +100,13 @@ async function sendDailyTaskNotification(chatId, telegramId) {
 
       const userId = userResults[0].id;
 
-      // Sau đó lấy nhiệm vụ dựa trên user_id
+      // Lấy nhiệm vụ được giao trực tiếp cho người dùng
       db.query(
-        `SELECT t.*, tm.team_id 
+        `SELECT DISTINCT t.* 
          FROM tasks t 
-         LEFT JOIN team_members tm ON t.team_id = tm.team_id 
-         WHERE t.assigned_to = ? OR tm.user_id = ?
+         WHERE t.assigned_to = ?
          ORDER BY t.deadline ASC`,
-        [userId, userId],
+        [userId],
         (err, taskResults) => {
           if (err) {
             console.error(err);
@@ -121,9 +120,12 @@ async function sendDailyTaskNotification(chatId, telegramId) {
           let message = `📅 *Danh sách nhiệm vụ của bạn*\n\n`;
 
           taskResults.forEach((task, index) => {
+            // Format lại ngày tháng cho dễ đọc
+            const deadline = new Date(task.deadline).toLocaleDateString('vi-VN');
+            
             message += `*${index + 1}. ${task.title}*\n`;
             message += `- Mô tả: ${task.description || 'Không có mô tả'}\n`;
-            message += `- Hạn chót: ${task.deadline}\n`;
+            message += `- Hạn chót: ${deadline}\n`;
             message += `- Trạng thái: ${task.status || 'Chưa có trạng thái'}\n\n`;
           });
 
