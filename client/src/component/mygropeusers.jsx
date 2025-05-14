@@ -84,7 +84,6 @@ function MyGroupsAsUser({ user, groups }) {
                 <Card.Meta
                   avatar={<Avatar icon={<UserOutlined />} />}
                   title={<strong>{group.name}</strong>}
-                  description={<Text type="secondary">Người tạo: {group.created_by}</Text>}
                 />
               </Card>
             </List.Item>
@@ -106,7 +105,6 @@ function MyGroupsAsUser({ user, groups }) {
         ]}
         width={700}
       >
-        <p><strong>Người tạo:</strong> {selectedGroup?.created_by}</p>
         <Divider />
         <Title level={5}><FileTextOutlined /> Nhiệm vụ của bạn trong nhóm</Title>
 

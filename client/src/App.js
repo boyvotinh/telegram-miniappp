@@ -226,7 +226,7 @@ function App() {
             }}
           />
           <Title level={4} style={{ margin: 0, color: token.colorTextHeading }}>
-            Telegram MiniApp
+            Group Manager
           </Title>
         </Header>
 
@@ -259,7 +259,7 @@ function App() {
           padding: '16px 50px'
         }}>
           <Text type="secondary">
-            Telegram MiniApp ©{new Date().getFullYear()} 
+            Telegram MiniApp ©
           </Text>
         </Footer>
       </Layout>
