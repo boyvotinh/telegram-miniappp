@@ -128,19 +128,40 @@ router.get('/by-member/:team_id/:user_id', (req, res) => {
 router.delete('/remove-member', (req, res) => {
   const { team_id, user_id } = req.body;
 
-  const sql = 'DELETE FROM team_members WHERE team_id = ? AND user_id = ?';
-  db.query(sql, [team_id, user_id], (err, result) => {
-    if (err) {
-      console.error('Lỗi khi xóa thành viên khỏi nhóm:', err);
-      return res.status(500).json({ error: 'Lỗi khi xóa thành viên' });
-    }
+  // Xóa tất cả task của thành viên trong nhóm
+  db.query(
+    'DELETE FROM tasks WHERE team_id = ? AND assigned_to = ?',
+    [team_id, user_id],
+    (err, taskResult) => {
+      if (err) {
+        console.error('Lỗi khi xóa nhiệm vụ của thành viên:', err);
+        return res.status(500).json({ error: 'Lỗi khi xóa nhiệm vụ của thành viên' });
+      }
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Không tìm thấy thành viên trong nhóm' });
-    }
+      console.log('Đã xóa số nhiệm vụ:', taskResult.affectedRows);
 
-    res.status(200).json({ message: 'Đã xóa thành viên khỏi nhóm' });
-  });
+      // Xóa thành viên khỏi team_members
+      db.query(
+        'DELETE FROM team_members WHERE team_id = ? AND user_id = ?',
+        [team_id, user_id],
+        (err, result) => {
+          if (err) {
+            console.error('Lỗi khi xóa thành viên khỏi nhóm:', err);
+            return res.status(500).json({ error: 'Lỗi khi xóa thành viên' });
+          }
+
+          if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Không tìm thấy thành viên trong nhóm' });
+          }
+
+          res.status(200).json({ 
+            message: 'Đã xóa thành viên khỏi nhóm',
+            deletedTasks: taskResult.affectedRows
+          });
+        }
+      );
+    }
+  );
 });
 
 module.exports = router;

@@ -132,23 +132,41 @@ router.delete('/leave-group', (req, res) => {
               });
             }
 
-            // Xóa thành viên khỏi team_members
+            // Xóa tất cả task của người dùng trong nhóm
             db.query(
-              'DELETE FROM team_members WHERE team_id = ? AND user_id = ?',
+              'DELETE FROM tasks WHERE team_id = ? AND assigned_to = ?',
               [groupId, userId],
-              (err, result) => {
+              (err, taskResult) => {
                 if (err) {
-                  console.error('Error removing member:', err);
+                  console.error('Error deleting tasks:', err);
                   return res.status(500).json({
                     success: false,
-                    message: 'Có lỗi xảy ra khi xóa thành viên'
+                    message: 'Có lỗi xảy ra khi xóa nhiệm vụ'
                   });
                 }
 
-                res.json({
-                  success: true,
-                  message: 'Đã rời nhóm thành công'
-                });
+                console.log('Deleted tasks:', taskResult.affectedRows);
+
+                // Xóa thành viên khỏi team_members
+                db.query(
+                  'DELETE FROM team_members WHERE team_id = ? AND user_id = ?',
+                  [groupId, userId],
+                  (err, result) => {
+                    if (err) {
+                      console.error('Error removing member:', err);
+                      return res.status(500).json({
+                        success: false,
+                        message: 'Có lỗi xảy ra khi xóa thành viên'
+                      });
+                    }
+
+                    res.json({
+                      success: true,
+                      message: 'Đã rời nhóm thành công',
+                      deletedTasks: taskResult.affectedRows
+                    });
+                  }
+                );
               }
             );
           }
