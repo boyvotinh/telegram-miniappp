@@ -259,7 +259,7 @@ function App() {
           padding: '16px 50px'
         }}>
           <Text type="secondary">
-            Telegram MiniApp ©{new Date().getFullYear()} Created with Ant Design
+            Telegram MiniApp ©{new Date().getFullYear()} 
           </Text>
         </Footer>
       </Layout>
