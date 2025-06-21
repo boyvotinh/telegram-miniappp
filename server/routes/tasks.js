@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { sendTaskNotification } = require('../services/taskNotification');
+const { sendTaskNotification } = require('../routes/notifications');
 
 router.post('/assign', async (req, res) => {
   const { title, description, deadline, assigned_to, team_id } = req.body;
