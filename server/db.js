@@ -1,10 +1,10 @@
 const mysql = require('mysql2');
 require('dotenv').config();
 const connection = mysql.createConnection({
-  host: "centerbeam.proxy.rlwy.net",
-  port: 29651,
+  host: "metro.proxy.rlwy.net",
+  port: 41160,
   user: "root",
-  password: "xvpXbvYAIWfxRoYWylGbeSZIQKMXXWuI",
+  password: "TjNuKjAMdZxcnGOpZWsoxuleFWrxbpJJ",
   database: "railway",
 });
 connection.connect((err) => {
