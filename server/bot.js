@@ -188,3 +188,7 @@ async function sendDailyTaskNotification(chatId, telegramId) {
     }
   );
 }
+
+module.exports = {
+  bot,
+};
