@@ -1,18 +1,15 @@
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 require('dotenv').config();
-const connection = mysql.createConnection({
+
+const connection = mysql.createPool({
   host: "metro.proxy.rlwy.net",
   port: 41160,
   user: "root",
   password: "TjNuKjAMdZxcnGOpZWsoxuleFWrxbpJJ",
   database: "railway",
-});
-connection.connect((err) => {
-  if (err) {
-    console.error('❌ Lỗi kết nối MySQL:', err);
-    return;
-  }
-  console.log('✅ Kết nối MySQL thành công!');
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
 module.exports = connection;
