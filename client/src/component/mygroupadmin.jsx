@@ -603,7 +603,7 @@ function MyGroupsAsAdmin({ user, groups }) {
                           }
                         />
                         <Tag color="blue">
-                          <CalendarOutlined /> Hạn chót: {task.deadline || 'Không có'}
+                          <CalendarOutlined /> Hạn chót: {task.deadline ? dayjs(task.deadline).format('DD/MM/YYYY') : 'Không có'}
                         </Tag>
                       </Space>
                     </Space>
