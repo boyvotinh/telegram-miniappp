@@ -10,6 +10,7 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(cors());
+app.use('/api', taskRoutes);
 app.use('/api/users', usersRouter);
 app.use('/api/teams', teamRoutes);
 app.use('/api/tasks', taskRoutes);

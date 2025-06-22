@@ -16,22 +16,22 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// API để nộp bài
-router.post('/', async (req, res) => {
-  const { task_id, user_id, submission_text, submission_file } = req.body;
+// API nộp bài
+router.post('/submit', upload.single('file'), async (req, res) => {
+  const { task_id, user_id } = req.body;
+  const file_path = req.file ? req.file.path : null;
+
+  if (!file_path) {
+    return res.status(400).json({ error: 'Chưa có file đính kèm' });
+  }
+
+  const sql = 'INSERT INTO submissions (task_id, user_id, file_path) VALUES (?, ?, ?)';
   try {
-    const [result] = await db.query(
-      'INSERT INTO submissions (task_id, user_id, submission_text, submission_file) VALUES (?, ?, ?, ?)',
-      [task_id, user_id, submission_text, submission_file]
-    );
-
-    // Cập nhật trạng thái task thành 'submitted'
-    await db.query('UPDATE tasks SET status = ? WHERE id = ?', ['submitted', task_id]);
-
-    res.status(201).json({ message: 'Đã nộp bài', submissionId: result.insertId });
-  } catch (error) {
-    console.error('Lỗi khi nộp bài:', error);
-    res.status(500).json({ error: 'Lỗi khi nộp bài' });
+    await db.query(sql, [task_id, user_id, file_path]);
+    res.status(200).json({ message: 'Đã nộp nhiệm vụ thành công!' });
+  } catch (err) {
+    console.error('Lỗi nộp bài:', err);
+    res.status(500).json({ error: 'Lỗi khi lưu bài nộp' });
   }
 });
 
