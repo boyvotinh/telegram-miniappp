@@ -72,22 +72,21 @@ function MyTasks({ tasks }) {
     setUploading(true);
     try {
       const formData = new FormData();
-      fileList.forEach(file => {
-        formData.append('files', file.originFileObj);
-      });
-      formData.append('taskId', selectedTask.id);
+      formData.append('submission_file', fileList[0].originFileObj);
+      formData.append('task_id', selectedTask.id);
+      formData.append('user_id', selectedTask.assigned_to);
 
-      await axios.post('https://telegram-miniappp.onrender.com/api/tasks/submit', formData, {
+      await axios.post('https://telegram-miniappp.onrender.com/api/submissions', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      message.success('Nộp file thành công!');
+      message.success('Nộp bài thành công!');
       handleCancel();
     } catch (error) {
-      console.error('Lỗi khi nộp file:', error);
-      message.error('Không thể nộp file. Vui lòng thử lại sau.');
+      console.error('Lỗi khi nộp bài:', error);
+      message.error('Không thể nộp bài. Vui lòng thử lại sau.');
     } finally {
       setUploading(false);
     }

@@ -54,11 +54,11 @@ function App() {
       const fetchUserInfo = async () => {
         try {
           // console.log('Fetching user info for', telegramUser.id);
-          const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/me?telegram_id=${telegramUser.id}`);
+          const response = await axios.get(`https://telegram-miniappp.onrender.com/api/users/telegram/${telegramUser.id}`);
           const userData = response.data;
           setUser(userData);  // Cập nhật dữ liệu người dùng
   
-          const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/by-user/${userData.id}`);
+          const groupsResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/teams/user/${userData.id}`);
           setGroups(groupsResponse.data);  // Lưu thông tin nhóm
   
           const taskResponse = await axios.get(`https://telegram-miniappp.onrender.com/api/tasks/user/${userData.id}`);
