@@ -8,7 +8,7 @@ const { bot } = require('../bot');
 async function sendTaskNotification(userId, task) {
   try {
     const message = `
-🔔 *Nhắc nhở nhiệm vụ sắp đến hạn*
+🔔 *Bạn có nhiệm vụ mới*
 
 📋 *${task.title}*
 📝 ${task.description}
@@ -23,6 +23,7 @@ async function sendTaskNotification(userId, task) {
     console.log(`Đã gửi thông báo nhiệm vụ cho user ${userId}`);
   } catch (error) {
     console.error('Lỗi khi gửi thông báo:', error);
+    throw error;
   }
 }
 
@@ -131,4 +132,9 @@ cron.schedule('0 8 * * *', () => {
 console.log('Khởi động service thông báo nhiệm vụ...');
 checkDailyTasks();
 
-module.exports = router;
+module.exports = {
+  sendTaskNotification,
+  sendDailyTaskSummary,
+  checkDailyTasks,
+  router,
+};
