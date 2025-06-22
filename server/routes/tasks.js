@@ -20,14 +20,14 @@ router.post('/assign', async (req, res) => {
     );
 
     // Gửi thông báo cho user
-    if (users.length > 0 && users[0].telegram_id) {
+    /* if (users.length > 0 && users[0].telegram_id) {
       const task = {
         title,
         description,
         deadline
       };
       await sendTaskNotification(users[0].telegram_id, task);
-    }
+    } */
 
     res.status(201).json({ message: 'Đã tạo nhiệm vụ', taskId: result.insertId });
   } catch (error) {
