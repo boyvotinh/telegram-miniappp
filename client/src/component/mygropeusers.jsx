@@ -15,6 +15,7 @@ import {
   CalendarOutlined,
   TeamOutlined as TeamIcon
 } from '@ant-design/icons';
+import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -305,7 +306,7 @@ function MyGroupsAsUser({ user, groups }) {
                         <Space>
                           <CalendarOutlined />
                           <Text>
-                            <Text strong>Hạn chót:</Text> {task.deadline || 'Không có'}
+                            <Text strong>Hạn chót:</Text> {task.deadline ? dayjs(task.deadline).format('DD/MM/YYYY') : 'Không có'}
                           </Text>
                         </Space>
 

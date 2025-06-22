@@ -12,6 +12,7 @@ import {
   PaperClipOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
+import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -227,7 +228,7 @@ function MyTasks({ tasks }) {
                       <Space>
                         <CalendarOutlined />
                         <Text>
-                          <Text strong>Hạn chót:</Text> {task.deadline || 'Không có'}
+                          <Text strong>Hạn chót:</Text> {task.deadline ? dayjs(task.deadline).format('DD/MM/YYYY') : 'Không có'}
                         </Text>
                       </Space>
 
