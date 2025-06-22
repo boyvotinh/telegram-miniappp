@@ -72,11 +72,18 @@ function MyTasks({ tasks }) {
     setUploading(true);
     try {
       const formData = new FormData();
-      formData.append('submission_file', fileList[0].originFileObj);
+      formData.append('file', fileList[0].originFileObj);
       formData.append('task_id', selectedTask.id);
-      formData.append('user_id', selectedTask.assigned_to);
+      
+      if (selectedTask.assigned_to) {
+        formData.append('user_id', selectedTask.assigned_to);
+      } else {
+        message.error('Không tìm thấy thông tin người dùng cho nhiệm vụ này.');
+        setUploading(false);
+        return;
+      }
 
-      await axios.post('https://telegram-miniappp.onrender.com/api/submissions', formData, {
+      await axios.post('https://telegram-miniappp.onrender.com/api/submissions/submit', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
