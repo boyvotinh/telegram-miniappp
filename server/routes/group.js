@@ -2,43 +2,34 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// API để rời nhóm
-router.post('/leave-group', async (req, res) => {
-  const userId = req.user.id; // Giả sử đã có middleware xác thực người dùng
-
+// API để tham gia nhóm
+router.post('/join', async (req, res) => {
+  const { team_id, user_id } = req.body;
   try {
-    // Kiểm tra xem người dùng có phải là admin không
-    const [adminCheck] = await db.query(
-      `SELECT t.created_by 
-       FROM teams t 
-       JOIN team_members tm ON t.id = tm.team_id 
-       WHERE tm.user_id = ?`,
-      [userId]
-    );
-
-    if (adminCheck && adminCheck.created_by === userId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Bạn là admin của nhóm, không thể rời nhóm. Vui lòng chuyển quyền admin cho người khác trước.'
-      });
+    const [existing] = await db.query('SELECT * FROM team_members WHERE team_id = ? AND user_id = ?', [team_id, user_id]);
+    if (existing.length > 0) {
+      return res.status(409).json({ message: 'User đã ở trong nhóm này rồi' });
     }
 
-    // Xóa thành viên khỏi team_members
-    await db.query(
-      'DELETE FROM team_members WHERE user_id = ?',
-      [userId]
-    );
-
-    res.json({
-      success: true,
-      message: 'Đã rời nhóm thành công'
-    });
+    await db.query('INSERT INTO team_members (team_id, user_id, role) VALUES (?, ?, ?)', [team_id, user_id, 'member']);
+    res.status(200).json({ message: 'Đã tham gia nhóm thành công' });
   } catch (error) {
-    console.error('Error leaving group:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Có lỗi xảy ra khi rời nhóm'
-    });
+    console.error('Lỗi khi tham gia nhóm:', error);
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+
+// API để rời nhóm
+router.post('/leave', async (req, res) => {
+  const { team_id, user_id } = req.body;
+  try {
+    // Không cho admin rời nhóm? (Cân nhắc logic này)
+    // Tạm thời cho phép rời nhóm
+    await db.query('DELETE FROM team_members WHERE team_id = ? AND user_id = ?', [team_id, user_id]);
+    res.status(200).json({ message: 'Đã rời nhóm thành công' });
+  } catch (error) {
+    console.error('Lỗi khi rời nhóm:', error);
+    res.status(500).json({ error: 'Lỗi server' });
   }
 });
 

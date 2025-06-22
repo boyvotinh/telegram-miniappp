@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { sendTaskNotification } = require('../routes/notifications');
 
 router.post('/assign', async (req, res) => {
   const { title, description, deadline, assigned_to, team_id } = req.body;
@@ -37,44 +36,43 @@ router.post('/assign', async (req, res) => {
 });
 
 // Cập nhật nhiệm vụ
-router.put('/update/:taskId', (req, res) => {
-  const taskId = req.params.id;
+router.put('/update/:taskId', async (req, res) => {
+  const { taskId } = req.params;
   const { title, description, status, deadline, assigned_to } = req.body;
-    // 2. Cập nhật nhiệm vụ
+  try {
     const updateSql = `
       UPDATE tasks
       SET title = ?, description = ?, status = ?, deadline = ?, assigned_to = ?
       WHERE id = ?
     `;
-    db.query(updateSql, [title, description, status, deadline, assigned_to, taskId], (err2, result) => {
-      if (err2) {
-        return res.status(500).json({ error: 'Lỗi khi cập nhật nhiệm vụ' });
-      }
-
-      res.json({ message: 'Nhiệm vụ đã được cập nhật' });
-    });
-  });
-
-// Xoá nhiệm vụ
-router.delete('/delete/:taskId', (req, res) => {
-  const taskId = req.params.taskId;
-
-  const deleteSql = 'DELETE FROM tasks WHERE id = ?';
-  db.query(deleteSql, [taskId], (err2, result) => {
-    if (err2) {
-      return res.status(500).json({ error: 'Lỗi khi xoá nhiệm vụ' });
-    }
-    res.json({ message: 'Nhiệm vụ đã được xoá' });
-  });
+    await db.query(updateSql, [title, description, status, deadline, assigned_to, taskId]);
+    res.json({ message: 'Nhiệm vụ đã được cập nhật' });
+  } catch (error) {
+    console.error('Lỗi khi cập nhật nhiệm vụ:', error);
+    res.status(500).json({ error: 'Lỗi khi cập nhật nhiệm vụ' });
+  }
 });
 
-router.get('/my-tasks', (req, res) => {
-  const { team_id, user_id, status, deadline_from, deadline_to } = req.query;
+// Xoá nhiệm vụ
+router.delete('/delete/:taskId', async (req, res) => {
+  const { taskId } = req.params;
+  try {
+    const deleteSql = 'DELETE FROM tasks WHERE id = ?';
+    await db.query(deleteSql, [taskId]);
+    res.json({ message: 'Nhiệm vụ đã được xoá' });
+  } catch (error) {
+    console.error('Lỗi khi xoá nhiệm vụ:', error);
+    res.status(500).json({ error: 'Lỗi khi xoá nhiệm vụ' });
+  }
+});
 
-  // 1. Kiểm tra xem user có thuộc nhóm không
-  const checkMemberSql = 'SELECT * FROM team_members WHERE team_id = ? AND user_id = ?';
-  db.query(checkMemberSql, [team_id, user_id], (err, results) => {
-    if (err || results.length === 0) {
+router.get('/my-tasks', async (req, res) => {
+  const { team_id, user_id, status, deadline_from, deadline_to } = req.query;
+  try {
+    // 1. Kiểm tra xem user có thuộc nhóm không
+    const checkMemberSql = 'SELECT * FROM team_members WHERE team_id = ? AND user_id = ?';
+    const [results] = await db.query(checkMemberSql, [team_id, user_id]);
+    if (results.length === 0) {
       return res.status(403).json({ message: 'Bạn không thuộc nhóm này' });
     }
 
@@ -97,43 +95,40 @@ router.get('/my-tasks', (req, res) => {
       values.push(deadline_to);
     }
 
-    db.query(taskSql, values, (err2, taskResults) => {
-      if (err2) {
-        return res.status(500).json({ error: 'Lỗi khi lấy nhiệm vụ' });
-      }
-
-      res.json({ tasks: taskResults });
-    });
-  });
+    const [taskResults] = await db.query(taskSql, values);
+    res.json({ tasks: taskResults });
+  } catch (error) {
+    console.error('Lỗi khi lấy nhiệm vụ:', error);
+    res.status(500).json({ error: 'Lỗi khi lấy nhiệm vụ' });
+  }
 });
 
 // xem nhiệm vụ
-router.get('/user/:userId', (req, res) => {
-  const userId = req.params.userId;
-  const teamId = req.query.team_id;
+router.get('/user/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const { team_id } = req.query;
 
-  let query = `
-    SELECT tasks.*, teams.name AS groupName
-    FROM tasks
-    LEFT JOIN teams ON tasks.team_id = teams.id
-    WHERE assigned_to = ?
-  `;
-  const params = [userId];
+  try {
+    let query = `
+      SELECT tasks.*, teams.name AS groupName
+      FROM tasks
+      LEFT JOIN teams ON tasks.team_id = teams.id
+      WHERE assigned_to = ?
+    `;
+    const params = [userId];
 
-  // Nếu có team_id, chỉ lấy nhiệm vụ của nhóm đó
-  if (teamId) {
-    query += ' AND tasks.team_id = ?';
-    params.push(teamId);
-  }
-
-  db.query(query, params, (err, results) => {
-    if (err) {
-      console.error('Lỗi khi lấy nhiệm vụ của user:', err);
-      return res.status(500).json({ error: 'Lỗi server' });
+    // Nếu có team_id, chỉ lấy nhiệm vụ của nhóm đó
+    if (team_id) {
+      query += ' AND tasks.team_id = ?';
+      params.push(team_id);
     }
 
+    const [results] = await db.query(query, params);
     res.json(results);
-  });
+  } catch (error) {
+    console.error('Lỗi khi lấy nhiệm vụ của user:', error);
+    res.status(500).json({ error: 'Lỗi server' });
+  }
 });
 
 module.exports = router;
